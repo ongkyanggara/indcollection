@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndCollection - Exclusive Kebaya & Bespoke Dress</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF untuk generate Invoice -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7B1113', /* Maroon Elegan / Ruby Red */
+                        primaryDark: '#54080B',
+                        gold: '#D4AF37', /* Gold/Emas */
+                        goldLight: '#F3E5AB',
+                        dark: '#1A1A1A',
+                        lightBg: '#FDFBF7' /* Off-white / Cream sangat muda */
+                    },
+                    fontFamily: {
+                        serif: ['"Cinzel"', 'serif'],
+                        sans: ['"Montserrat"', 'sans-serif'],
+                    },
+                    animation: {
+                        'modal-pop': 'modalPop 0.3s ease-out forwards',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        modalPop: {
+                            '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #FDFBF7; color: #1A1A1A; }
+        h1, h2, h3, h4, h5, .font-serif { font-family: '"Cinzel"', serif; }
+        .hide { display: none !important; }
+        .modal-bg { background-color: rgba(26, 26, 26, 0.85); backdrop-filter: blur(4px); }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #FDFBF7; }
+        ::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #7B1113; }
+        
+        input:focus, textarea:focus, select:focus { border-color: #D4AF37 !important; box-shadow: 0 0 0 1px #D4AF37 !important; }
+        
+        .hero-overlay { background: linear-gradient(to right, rgba(26,26,26,0.9) 0%, rgba(123,17,19,0.7) 100%); }
+        
+        /* Checkbox Custom styling */
+        .custom-checkbox input:checked + div { background-color: #7B1113; border-color: #7B1113; }
+        .custom-checkbox input:checked + div svg { display: block; }
+
+        /* Slider Controls */
+        .slider-btn { background: rgba(0,0,0,0.5); color: white; transition: background 0.3s ease; }
+        .slider-btn:hover { background: rgba(212,175,55,0.9); }
+    </style>
+</head>
+<body class="antialiased flex flex-col min-h-screen">
+
+    <!-- Top Bar: Waktu Real-time -->
+    <div class="bg-primaryDark text-goldLight text-xs tracking-widest py-2 px-4 flex justify-between items-center border-b border-gold/30">
+        <div class="max-w-7xl mx-auto w-full flex justify-between">
+            <span class="uppercase tracking-wider">Layanan Eksklusif Seluruh Indonesia</span>
+            <span id="realtime-clock" class="font-medium tracking-widest"></span>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="bg-white/95 backdrop-blur-md shadow-md sticky top-0 z-40 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="navigate('home')">
+                <div class="w-8 h-8 bg-primary rounded-sm flex items-center justify-center transform rotate-45">
+                    <span class="text-white font-serif transform -rotate-45 font-bold text-lg">IC</span>
+                </div>
+                <h1 class="text-2xl font-serif font-bold text-primary tracking-wide ml-2">Ind<span class="text-gold">Collection</span></h1>
+            </div>
+            
+            <div class="space-x-8 hidden md:flex items-center text-sm font-medium tracking-wide uppercase">
+                <button onclick="navigate('home')" class="text-dark hover:text-primary transition-colors">Beranda</button>
+                <button onclick="navigate('catalog')" class="text-dark hover:text-primary transition-colors">Sewa Kebaya</button>
+                <button onclick="navigate('bespoke')" class="text-gold hover:text-primary transition-colors border-b border-transparent hover:border-primary pb-1">Bespoke / Custom</button>
+                <button onclick="openAdminLoginModal()" class="text-xs bg-dark text-white hover:bg-primary px-5 py-2 rounded-sm transition-all duration-300">Admin</button>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-primary" onclick="document.getElementById('mobile-menu').classList.toggle('hide')">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hide md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-4 shadow-lg absolute w-full">
+            <button onclick="navigate('home'); closeMobileMenu()" class="block w-full text-left py-2 font-medium tracking-wide">Beranda</button>
+            <button onclick="navigate('catalog'); closeMobileMenu()" class="block w-full text-left py-2 font-medium tracking-wide">Sewa Kebaya</button>
+            <button onclick="navigate('bespoke'); closeMobileMenu()" class="block w-full text-left py-2 font-medium tracking-wide text-gold">Bespoke / Custom Dress</button>
+            <button onclick="openAdminLoginModal(); closeMobileMenu()" class="block w-full text-left py-2 text-primary font-bold">Admin Login</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        
+        <!-- ================= BERANDA ================= -->
+        <section id="view-home" class="view-section animate-fade-in">
+            <div class="relative bg-dark h-[80vh] flex items-center overflow-hidden">
+                <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-40"></div>
+                <div class="absolute inset-0 hero-overlay"></div>
+                
+                <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center md:text-left">
+                    <span class="text-gold tracking-[0.3em] uppercase text-sm mb-4 block font-medium">Elegansi & Tradisi</span>
+                    <h2 class="text-5xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight">Keanggunan <br><span class="text-primaryLight italic text-gold">Sempurna</span></h2>
+                    <p class="text-gray-300 max-w-xl mx-auto md:mx-0 mb-10 text-lg font-light">Penyewaan kebaya premium dan layanan pembuatan gaun kustom eksklusif (Bespoke) dari tangan profesional.</p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <button onclick="navigate('catalog')" class="bg-primary text-white border border-primary px-8 py-4 rounded-sm hover:bg-primaryDark transition-all duration-300 font-medium tracking-wide uppercase text-sm shadow-[0_0_15px_rgba(123,17,19,0.5)]">Sewa Kebaya</button>
+                        <button onclick="navigate('bespoke')" class="bg-transparent text-gold border border-gold px-8 py-4 rounded-sm hover:bg-gold hover:text-dark transition-all duration-300 font-medium tracking-wide uppercase text-sm">Lihat Portofolio Bespoke</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= KATALOG SEWA ================= -->
+        <section id="view-catalog" class="view-section hide max-w-7xl mx-auto px-4 py-16 animate-fade-in">
+            <div class="text-center mb-12">
+                <span class="text-primary tracking-[0.2em] uppercase text-xs font-bold block mb-2">Koleksi Ready to Wear</span>
+                <h2 class="text-4xl font-serif font-bold text-dark">Sewa Kebaya Premium</h2>
+                <div class="w-24 h-1 bg-gold mx-auto mt-6"></div>
+            </div>
+            <div class="flex flex-wrap justify-center gap-3 mb-12">
+                <button onclick="filterCatalog('semua')" class="filter-btn active bg-dark text-gold border border-dark px-6 py-2 text-sm uppercase tracking-wide transition-all">Semua</button>
+                <button onclick="filterCatalog('wisuda')" class="filter-btn bg-transparent text-dark border border-gray-300 hover:border-dark px-6 py-2 text-sm uppercase tracking-wide transition-all">Wisuda</button>
+                <button onclick="filterCatalog('pengantin')" class="filter-btn bg-transparent text-dark border border-gray-300 hover:border-dark px-6 py-2 text-sm uppercase tracking-wide transition-all">Pengantin</button>
+            </div>
+            <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
+        </section>
+
+        <!-- ================= HALAMAN BESPOKE (PORTOFOLIO & FORM) ================= -->
+        <section id="view-bespoke" class="view-section hide animate-fade-in">
+            <!-- Header Portofolio -->
+            <div class="bg-dark text-white py-20 px-4 text-center">
+                <span class="text-gold tracking-[0.3em] uppercase text-xs font-bold block mb-3">Layanan Jahit Eksklusif</span>
+                <h2 class="text-4xl md:text-5xl font-serif font-bold mb-6">Mahakarya IndCollection</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto font-light leading-relaxed">Lebih dari ratusan gaun dan kebaya impian telah kami wujudkan dengan presisi dan dedikasi tinggi. Temukan inspirasi Anda melalui portofolio karya terbaik kami di bawah ini.</p>
+            </div>
+
+            <!-- Galeri Portofolio -->
+            <div class="max-w-7xl mx-auto px-4 py-16">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+                    <!-- Item Portofolio 1 -->
+                    <div class="group relative overflow-hidden h-96 bg-gray-200">
+                        <img src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Detail Payet Kebaya Pengantin" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark/90 via-dark/20 to-transparent opacity-80"></div>
+                        <div class="absolute bottom-0 left-0 p-6 w-full transform translate-y-4 group-hover:translate-y-0 transition duration-500">
+                            <span class="text-gold text-[10px] uppercase tracking-widest font-bold">Kebaya Pengantin</span>
+                            <h3 class="text-white font-serif text-xl mt-1">Full Payet Eksklusif</h3>
+                        </div>
+                    </div>
+                    <!-- Item Portofolio 2 -->
+                    <div class="group relative overflow-hidden h-96 bg-gray-200">
+                        <img src="https://images.unsplash.com/photo-1610484518382-748a80d563be?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Kebaya Modern Wisuda" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark/90 via-dark/20 to-transparent opacity-80"></div>
+                        <div class="absolute bottom-0 left-0 p-6 w-full transform translate-y-4 group-hover:translate-y-0 transition duration-500">
+                            <span class="text-gold text-[10px] uppercase tracking-widest font-bold">Dress Modern</span>
+                            <h3 class="text-white font-serif text-xl mt-1">Silk Satin Velvet</h3>
+                        </div>
+                    </div>
+                    <!-- Item Portofolio 3 -->
+                    <div class="group relative overflow-hidden h-96 bg-gray-200">
+                        <img src="https://images.unsplash.com/photo-1566861298453-73130c25a07c?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Kebaya Klasik" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark/90 via-dark/20 to-transparent opacity-80"></div>
+                        <div class="absolute bottom-0 left-0 p-6 w-full transform translate-y-4 group-hover:translate-y-0 transition duration-500">
+                            <span class="text-gold text-[10px] uppercase tracking-widest font-bold">Klasik Kontemporer</span>
+                            <h3 class="text-white font-serif text-xl mt-1">Kutubaru Modern</h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-16">
+                    <h3 class="text-2xl font-serif text-dark mb-4">Siap Mewujudkan Gaun Impian Anda?</h3>
+                    <button onclick="openCustomDressModal()" class="bg-primary text-white px-10 py-4 hover:bg-primaryDark transition shadow-lg text-sm uppercase tracking-widest font-bold border border-primary">Mulai Konsultasi & Cek Estimasi Harga</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ADMIN DASHBOARD ================= -->
+        <section id="view-admin-dashboard" class="view-section hide max-w-7xl mx-auto px-4 py-16 animate-fade-in">
+             <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-10 border-b pb-6">
+                <div>
+                    <h2 class="text-3xl font-serif font-bold text-primary mb-2">Portal Manajemen</h2>
+                    <p class="text-gray-500 text-sm">Kontrol penuh atas penyewaan, pesanan kustom, dan database katalog.</p>
+                </div>
+                <button onclick="logoutAdmin()" class="mt-4 md:mt-0 text-sm border border-dark text-dark px-6 py-2 hover:bg-dark hover:text-white transition-all uppercase tracking-wide">Keluar Sistem</button>
+            </div>
+            
+            <div class="flex overflow-x-auto mb-6 space-x-1 border-b border-gray-200">
+                <button onclick="switchAdminTab('sewa')" id="tab-sewa" class="px-6 py-3 bg-primary text-white font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md whitespace-nowrap">Penyewaan</button>
+                <button onclick="switchAdminTab('custom')" id="tab-custom" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Pesanan Bespoke</button>
+                <button onclick="switchAdminTab('katalog')" id="tab-katalog" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Kelola Katalog <span class="text-gold ml-1">★</span></button>
+            </div>
+
+            <!-- Tables Containers -->
+            <div id="admin-sewa-container" class="bg-white shadow-lg border border-gray-100 overflow-x-auto rounded-b-md rounded-tr-md">
+                <table class="min-w-full"><tbody id="admin-orders-table" class="bg-white divide-y divide-gray-100"></tbody></table>
+            </div>
+            <div id="admin-custom-container" class="hide bg-white shadow-lg border border-gray-100 overflow-x-auto rounded-b-md rounded-tr-md">
+                <table class="min-w-full"><tbody id="admin-custom-table" class="bg-white divide-y divide-gray-100"></tbody></table>
+            </div>
+            
+            <!-- TAB 3: Tabel KELOLA KATALOG -->
+            <div id="admin-katalog-container" class="hide bg-white shadow-lg border border-gray-100 rounded-b-md rounded-tr-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-serif font-bold text-xl text-dark">Database Baju & Dress</h3>
+                    <button onclick="openManageItemModal()" class="bg-dark text-gold px-4 py-2 hover:bg-black transition rounded-sm uppercase tracking-widest text-[10px] font-bold">+ Tambah Item Baru</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 text-gray-500">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Foto</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Info Baju</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Kategori</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Harga Sewa</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-katalog-table" class="bg-white divide-y divide-gray-100">
+                            <!-- Dirender via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-goldLight py-12 border-t-4 border-primary mt-auto">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left">
+            <!-- Brand & IG -->
+            <div>
+                <h2 class="font-serif text-3xl text-gold mb-4">IndCollection</h2>
+                <p class="text-sm text-gray-400 mb-6 leading-relaxed max-w-md mx-auto md:mx-0">Eksklusivitas dalam setiap jahitan. Menyediakan kebaya premium untuk momen tak terlupakan Anda.</p>
+                <div class="space-y-2">
+                    <p class="text-xs uppercase tracking-widest text-gold font-bold mb-2">Instagram Kami:</p>
+                    <a href="https://www.instagram.com/ind_collection/" target="_blank" class="block text-sm text-gray-300 hover:text-white transition flex items-center justify-center md:justify-start gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        @ind_collection <span class="text-xs text-gray-500">(Bespoke/Custom)</span>
+                    </a>
+                    <a href="https://www.instagram.com/sewakebaya.bdl1/" target="_blank" class="block text-sm text-gray-300 hover:text-white transition flex items-center justify-center md:justify-start gap-2 mt-1">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        @sewakebaya.bdl1 <span class="text-xs text-gray-500">(Sewa Kebaya)</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Lokasi & WA -->
+            <div>
+                <h3 class="text-lg font-serif text-gold mb-3">Outlet Galeri di Bandar Lampung</h3>
+                <a href="https://maps.app.goo.gl/5kKjDTJwM9wyvzoq8" target="_blank" class="text-sm text-gray-300 hover:text-white transition block leading-relaxed mb-6 group bg-white/5 p-4 rounded-sm border-l-2 border-primary hover:border-gold">
+                    Jl. Ridwan Rais Gg. Ainan No.9, Kalibalau Kencana,<br>
+                    Kec. Kedamaian, Kota Bandar Lampung,<br>
+                    Lampung 35133
+                    <span class="flex items-center justify-center md:justify-start text-xs text-primary mt-2 group-hover:text-gold transition font-bold">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Buka di Google Maps &rarr;
+                    </span>
+                </a>
+                
+                <div class="mt-4">
+                    <p class="text-xs uppercase tracking-widest text-gold font-bold mb-2">Konsultasi & Reservasi:</p>
+                    <a href="https://wa.me/6281220007780" target="_blank" class="inline-flex items-center bg-green-600 text-white px-5 py-3 rounded-sm text-xs font-bold uppercase tracking-wider hover:bg-green-700 transition shadow-lg">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                        WhatsApp: +62 812-2000-7780
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 text-center mt-16 pt-8 border-t border-gray-800">
+            <p class="text-xs text-gray-500 uppercase tracking-widest">&copy; 2026 IndCollection. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL ADMIN LOGIN -->
+    <div id="modal-admin-login" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white w-full max-w-sm p-8 shadow-2xl animate-modal-pop border-t-4 border-primary relative">
+            <button onclick="closeModal('modal-admin-login')" class="absolute top-4 right-4 text-gray-400">X</button>
+            <h2 class="text-xl font-serif font-bold mb-4 text-center">Admin (admin123)</h2>
+            <input type="password" id="admin-password" class="w-full border-b-2 p-2 mb-4 outline-none" placeholder="Password">
+            <button onclick="handleLogin(event)" class="w-full bg-dark text-gold p-3 uppercase text-sm font-bold">Masuk</button>
+            <p id="login-error" class="text-primary text-xs mt-2 text-center hide">Salah!</p>
+        </div>
+    </div>
+    
+    <!-- MODAL BOOKING SEWA -->
+    <div id="modal-booking" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white w-full max-w-xl p-8 shadow-2xl animate-modal-pop relative">
+            <button onclick="closeModal('modal-booking')" class="absolute top-4 right-4 text-gray-400">X</button>
+            <h3 class="text-xl font-serif font-bold text-primary mb-4">Form Sewa</h3>
+            <div id="booking-item-details" class="mb-4"></div>
+            <form onsubmit="submitBooking(event)">
+                <input type="hidden" id="form-item-id">
+                <input type="text" id="form-name" placeholder="Nama" class="w-full border p-2 mb-2" required>
+                <input type="tel" id="form-wa" placeholder="WA" class="w-full border p-2 mb-2" required>
+                <input type="date" id="form-date-start" class="w-full border p-2 mb-2" required>
+                <input type="date" id="form-date-end" class="w-full border p-2 mb-4" required>
+                <button type="submit" class="w-full bg-primary text-white p-3 font-bold">Sewa</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL MANAGE ITEM (TAMBAH/EDIT KATALOG) -->
+    <div id="modal-manage-item" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar animate-modal-pop shadow-2xl relative">
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm z-10 px-8 py-5 border-b border-gray-100 flex justify-between items-center">
+                <h3 id="manage-modal-title" class="text-xl font-serif font-bold text-primary">Tambah Item Katalog</h3>
+                <button onclick="closeModal('modal-manage-item')" class="text-gray-400 hover:text-primary transition-colors">X</button>
+            </div>
+            
+            <div class="p-8">
+                <form id="manage-item-form" onsubmit="submitManageItem(event)">
+                    <input type="hidden" id="manage-mode" value="add">
+                    <input type="hidden" id="manage-id"> 
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Kebaya / Dress *</label>
+                            <input type="text" id="manage-name" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kategori *</label>
+                            <select id="manage-category" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent text-sm" required>
+                                <option value="wisuda">Kebaya Wisuda</option>
+                                <option value="pengantin">Kebaya Pengantin</option>
+                                <option value="kutubaru">Kutubaru</option>
+                                <option value="dress">Gaun / Dress Modern</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Harga Sewa (Rp) *</label>
+                            <input type="number" id="manage-price" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" required>
+                        </div>
+
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Status Ketersediaan</label>
+                            <select id="manage-status" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent text-sm">
+                                <option value="true">Tersedia (Ready)</option>
+                                <option value="false">Tidak Tersedia / Disewa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 border border-gray-200 p-4 mb-6">
+                        <h4 class="text-xs font-bold text-dark uppercase tracking-widest mb-3 border-b pb-2">Manajemen Foto (URL Link)</h4>
+                        <p class="text-[10px] text-gray-500 mb-4">Sistem mendukung hingga 3 foto per baju. Masukkan link URL gambar. Foto 1 wajib diisi sebagai sampul.</p>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Foto 1 (Sampul Utama) *</label>
+                                <input type="url" id="manage-img-1" placeholder="https://..." class="w-full border p-2 text-xs focus:border-primary outline-none" required>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Foto 2 (Opsional)</label>
+                                <input type="url" id="manage-img-2" placeholder="https://..." class="w-full border p-2 text-xs focus:border-primary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Foto 3 (Opsional)</label>
+                                <input type="url" id="manage-img-3" placeholder="https://..." class="w-full border p-2 text-xs focus:border-primary outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-primary text-white px-4 py-4 hover:bg-primaryDark transition-colors uppercase tracking-widest text-sm font-bold shadow-lg">Simpan Data Baju</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= MODAL: CUSTOM DRESS DENGAN ESTIMASI HARGA ================= -->
+    <div id="modal-custom-dress" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar animate-modal-pop shadow-2xl relative flex flex-col md:flex-row">
+            
+            <button onclick="closeModal('modal-custom-dress')" class="absolute top-4 right-4 text-gray-400 hover:text-primary transition-colors z-20 bg-white rounded-full p-1 shadow-md">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- Bagian Kiri: Form Input -->
+            <div class="w-full md:w-2/3 p-6 md:p-8 bg-white border-r border-gray-100">
+                <div class="mb-6 border-b pb-4">
+                    <h3 class="text-2xl font-serif font-bold text-dark mb-1">Formulir Bespoke</h3>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Lengkapi data untuk kalkulasi estimasi awal</p>
+                </div>
+
+                <form id="custom-dress-form" onsubmit="submitCustomOrder(event)">
+                    <!-- Identitas -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Nama *</label>
+                            <input type="text" id="cd-name" class="w-full border-b border-gray-300 px-2 py-1 focus:border-gold outline-none bg-transparent" required>
+                        </div>
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">WhatsApp *</label>
+                            <input type="tel" id="cd-wa" class="w-full border-b border-gray-300 px-2 py-1 focus:border-gold outline-none bg-transparent" required>
+                        </div>
+                    </div>
+
+                    <!-- Pilihan Material & Detail -->
+                    <div class="bg-lightBg border border-gold/30 p-4 mb-6">
+                        <h4 class="text-xs font-bold text-primary uppercase tracking-widest mb-3">Spesifikasi Material & Detail (Opsional)</h4>
+                        
+                        <label class="custom-checkbox flex items-center cursor-pointer mb-3">
+                            <input type="checkbox" id="opt-kain" class="hidden" onchange="calculateEstimasi()">
+                            <div class="w-4 h-4 border-2 border-gray-400 rounded-sm mr-3 flex items-center justify-center transition-colors">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-sm text-gray-700">Kain Premium (Silk/Tulle Kualitas Tinggi) <span class="text-xs text-primary font-bold ml-1">+Rp 200.000</span></span>
+                        </label>
+
+                        <label class="custom-checkbox flex items-center cursor-pointer mb-3">
+                            <input type="checkbox" id="opt-payet-ringan" class="hidden" onchange="togglePayet('ringan'); calculateEstimasi()">
+                            <div class="w-4 h-4 border-2 border-gray-400 rounded-sm mr-3 flex items-center justify-center transition-colors">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-sm text-gray-700">Tambahan Payet Ringan (Leher/Dada) <span class="text-xs text-primary font-bold ml-1">+Rp 150.000</span></span>
+                        </label>
+
+                        <label class="custom-checkbox flex items-center cursor-pointer mb-3">
+                            <input type="checkbox" id="opt-payet-full" class="hidden" onchange="togglePayet('full'); calculateEstimasi()">
+                            <div class="w-4 h-4 border-2 border-gray-400 rounded-sm mr-3 flex items-center justify-center transition-colors">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-sm text-gray-700">Aplikasi Full Payet / Bordir 3D <span class="text-xs text-primary font-bold ml-1">+Rp 450.000</span></span>
+                        </label>
+
+                        <label class="custom-checkbox flex items-center cursor-pointer">
+                            <input type="checkbox" id="opt-furing" class="hidden" onchange="calculateEstimasi()">
+                            <div class="w-4 h-4 border-2 border-gray-400 rounded-sm mr-3 flex items-center justify-center transition-colors">
+                                <svg class="w-3 h-3 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <span class="text-sm text-gray-700">Furing Dalam (Inner Dress) <span class="text-xs text-primary font-bold ml-1">+Rp 100.000</span></span>
+                        </label>
+                    </div>
+
+                    <!-- Ukuran -->
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <div class="col-span-3"><label class="block text-[10px] font-bold text-gray-500 uppercase">Ukuran Vital (CM)</label></div>
+                        <div><input type="number" id="cd-dada" placeholder="L. Dada *" class="w-full border-b text-sm p-1 focus:border-gold outline-none bg-transparent" required></div>
+                        <div><input type="number" id="cd-pinggang" placeholder="L. Pinggang *" class="w-full border-b text-sm p-1 focus:border-gold outline-none bg-transparent" required></div>
+                        <div><input type="number" id="cd-pinggul" placeholder="L. Pinggul *" class="w-full border-b text-sm p-1 focus:border-gold outline-none bg-transparent" required></div>
+                        <div><input type="number" id="cd-bahu" placeholder="L. Bahu *" class="w-full border-b text-sm p-1 focus:border-gold outline-none bg-transparent" required></div>
+                        <div class="col-span-2"><input type="number" id="cd-panjangbaju" placeholder="Panjang Dress (dari bahu) *" class="w-full border-b-2 border-primary/30 p-1 focus:border-primary outline-none bg-primary/5 text-primary text-sm font-bold" required></div>
+                    </div>
+
+                    <textarea id="cd-notes" rows="2" placeholder="Catatan Model (Cth: Kerah sabrina, lengan balon...)" class="w-full border border-gray-300 p-2 text-sm focus:border-gold outline-none mb-4"></textarea>
+
+                    <button type="submit" class="md:hidden w-full bg-dark text-gold px-4 py-4 uppercase tracking-widest text-xs font-bold shadow-xl">Kirim & Minta Penawaran</button>
+                </form>
+            </div>
+
+            <!-- Bagian Kanan: Kalkulator Harga -->
+            <div class="w-full md:w-1/3 bg-dark text-white p-6 md:p-8 flex flex-col justify-between">
+                <div>
+                    <h3 class="font-serif text-xl text-gold mb-6 border-b border-gold/30 pb-3">Estimasi Biaya</h3>
+                    
+                    <div class="space-y-3 text-sm font-light text-gray-300">
+                        <div class="flex justify-between">
+                            <span>Jasa Jahit Basic</span>
+                            <span class="text-white font-medium">Rp 280.000</span>
+                        </div>
+                        <div id="calc-kain" class="flex justify-between hide text-goldLight">
+                            <span>Kain Premium</span>
+                            <span>+ Rp 200.000</span>
+                        </div>
+                        <div id="calc-payet-ringan" class="flex justify-between hide text-goldLight">
+                            <span>Payet Ringan</span>
+                            <span>+ Rp 150.000</span>
+                        </div>
+                        <div id="calc-payet-full" class="flex justify-between hide text-goldLight">
+                            <span>Full Payet/Bordir</span>
+                            <span>+ Rp 450.000</span>
+                        </div>
+                        <div id="calc-furing" class="flex justify-between hide text-goldLight">
+                            <span>Furing Dalam</span>
+                            <span>+ Rp 100.000</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-gray-600">
+                        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Total Estimasi Awal</p>
+                        <p id="total-estimasi" class="text-3xl font-serif text-gold font-bold">Rp 280.000</p>
+                    </div>
+
+                    <p class="text-[10px] text-gray-400 mt-6 leading-relaxed italic bg-white/5 p-3 rounded-sm border-l-2 border-gold">
+                        *Harga di atas adalah <b>estimasi dasar</b>. Harga final dapat berubah menyesuaikan kerumitan pola, jenis kain spesifik di pasaran, dan kesepakatan akhir saat konsultasi.
+                    </p>
+                </div>
+
+                <button onclick="document.getElementById('custom-dress-form').dispatchEvent(new Event('submit'))" class="hidden md:block w-full bg-gold text-dark px-4 py-4 hover:bg-white transition-colors uppercase tracking-widest text-xs font-bold shadow-[0_0_15px_rgba(212,175,55,0.3)] mt-8">
+                    Kirim ke Desainer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SUKSES -->
+    <div id="modal-success" class="hide fixed inset-0 z-[60] flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white w-full max-w-sm text-center p-8 animate-modal-pop border-t-4 border-gold shadow-2xl">
+            <h3 class="text-2xl font-serif font-bold text-dark mb-3" id="success-title">Berhasil</h3>
+            <p class="text-gray-600 text-sm mb-8 leading-relaxed" id="success-desc">Tindakan selesai.</p>
+            <div class="space-y-3" id="success-actions"></div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- JAM REALTIME DENGAN TANGGAL, TAHUN, DETIK LENGKAP ---
+        function updateClock() {
+            const now = new Date();
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            
+            const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} WIB`;
+            
+            document.getElementById('realtime-clock').innerHTML = `<span class="hidden sm:inline">${dateStr} | </span><span class="text-gold font-bold">${timeStr}</span>`;
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        // --- STATE & NAVIGASI (Dengan Fitur Multi-Gambar) ---
+        let catalogData = [
+            { 
+                id: 'KB001', name: 'Kebaya Wisuda Modern Ruby', category: 'wisuda', price: 175000, available: true, 
+                images: [
+                    'https://images.unsplash.com/photo-1610484518382-748a80d563be?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+                    'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80' // Foto 2 untuk efek slider
+                ] 
+            },
+            { 
+                id: 'KB002', name: 'Royal White Wedding Dress', category: 'pengantin', price: 850000, available: true, 
+                images: [
+                    'https://images.unsplash.com/photo-1588667635956-613b5e43a9a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'
+                ] 
+            }
+        ];
+
+        let orderData = []; 
+        let currentSlideIndex = {}; // Untuk menyimpan state slider pada masing-masing item
+
+        function closeMobileMenu() { document.getElementById('mobile-menu').classList.add('hide'); }
+        
+        function navigate(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hide'));
+            document.getElementById(`view-${viewId}`).classList.remove('hide');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (viewId === 'catalog') renderCatalog('semua');
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).classList.remove('hide'); document.body.style.overflow = 'hidden'; }
+        function closeModal(modalId) { document.getElementById(modalId).classList.add('hide'); document.body.style.overflow = 'auto'; }
+
+        function openCustomDressModal() { calculateEstimasi(); openModal('modal-custom-dress'); }
+        function openAdminLoginModal() { openModal('modal-admin-login'); }
+
+        // --- KALKULATOR BESPOKE ---
+        const HARGA_BASIC = 280000;
+        const HARGA_KAIN = 200000;
+        const HARGA_PAYET_RINGAN = 150000;
+        const HARGA_PAYET_FULL = 450000;
+        const HARGA_FURING = 100000;
+        let estimasiSaatIni = HARGA_BASIC;
+
+        function togglePayet(jenis) {
+            if(jenis === 'ringan' && document.getElementById('opt-payet-ringan').checked) { document.getElementById('opt-payet-full').checked = false; }
+            else if(jenis === 'full' && document.getElementById('opt-payet-full').checked) { document.getElementById('opt-payet-ringan').checked = false; }
+        }
+
+        function calculateEstimasi() {
+            let total = HARGA_BASIC;
+            const isKain = document.getElementById('opt-kain').checked;
+            const isPayetRingan = document.getElementById('opt-payet-ringan').checked;
+            const isPayetFull = document.getElementById('opt-payet-full').checked;
+            const isFuring = document.getElementById('opt-furing').checked;
+
+            if(isKain) total += HARGA_KAIN;
+            if(isPayetRingan) total += HARGA_PAYET_RINGAN;
+            if(isPayetFull) total += HARGA_PAYET_FULL;
+            if(isFuring) total += HARGA_FURING;
+
+            document.getElementById('calc-kain').classList.toggle('hide', !isKain);
+            document.getElementById('calc-payet-ringan').classList.toggle('hide', !isPayetRingan);
+            document.getElementById('calc-payet-full').classList.toggle('hide', !isPayetFull);
+            document.getElementById('calc-furing').classList.toggle('hide', !isFuring);
+
+            estimasiSaatIni = total;
+            document.getElementById('total-estimasi').innerText = formatRupiah(total);
+        }
+
+        function submitCustomOrder(e) {
+            e.preventDefault();
+            const cdId = 'Bespoke-' + Math.floor(Math.random() * 10000);
+            const name = document.getElementById('cd-name').value;
+            closeModal('modal-custom-dress');
+            
+            const waMsg = `Halo Tim IndCollection,%0ASaya telah mengisi form Bespoke Dress (ID: ${cdId}).%0ANama: ${name}%0AEstimasi Awal di Web: *${formatRupiah(estimasiSaatIni)}*%0A%0AMohon panduannya untuk konsultasi lebih lanjut mengenai bahan dan ukuran.`;
+            showSuccessAlert(
+                "Estimasi Tersimpan", 
+                `Total Estimasi Awal Anda adalah <b>${formatRupiah(estimasiSaatIni)}</b>. Silakan lanjutkan komunikasi ke WhatsApp Desainer kami untuk fiksasi harga dan model.`,
+                `<a href="https://wa.me/6281220007780?text=${waMsg}" target="_blank" onclick="closeModal('modal-success')" class="block w-full bg-dark text-gold border border-dark px-4 py-3 hover:bg-black transition text-xs uppercase tracking-widest font-bold text-center">Lanjut ke WhatsApp</a>
+                 <button onclick="closeModal('modal-success'); document.getElementById('custom-dress-form').reset();" class="w-full text-gray-400 hover:text-dark py-3 mt-1 text-xs uppercase tracking-widest font-bold">Tutup</button>`
+            );
+        }
+
+        // --- KATALOG & SLIDER UTILS ---
+        function formatRupiah(angka) { return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+
+        function filterCatalog(category) {
+            document.querySelectorAll('.filter-btn').forEach(btn => { btn.classList.remove('bg-dark', 'text-gold', 'active'); btn.classList.add('bg-transparent', 'text-dark'); });
+            event.currentTarget.classList.remove('bg-transparent', 'text-dark'); event.currentTarget.classList.add('bg-dark', 'text-gold', 'active');
+            renderCatalog(category);
+        }
+
+        // Fungsi Slider Gambar
+        function slideImage(itemId, direction) {
+            const item = catalogData.find(i => i.id === itemId);
+            if (!item || item.images.length <= 1) return;
+            
+            const maxIdx = item.images.length;
+            currentSlideIndex[itemId] = (currentSlideIndex[itemId] + direction + maxIdx) % maxIdx;
+            
+            document.getElementById(`img-${itemId}`).src = item.images[currentSlideIndex[itemId]];
+            
+            const dotsContainer = document.getElementById(`dots-${itemId}`);
+            if(dotsContainer) {
+                Array.from(dotsContainer.children).forEach((dot, idx) => {
+                    dot.className = idx === currentSlideIndex[itemId] ? 'w-2 h-2 rounded-full bg-gold' : 'w-2 h-2 rounded-full bg-white/50';
+                });
+            }
+        }
+
+        function renderCatalog(categoryFilter) {
+            const grid = document.getElementById('catalog-grid'); grid.innerHTML = '';
+            const filtered = categoryFilter === 'semua' ? catalogData : catalogData.filter(i => i.category === categoryFilter);
+            
+            filtered.forEach(item => {
+                currentSlideIndex[item.id] = 0; // Inisiasi index ke 0 tiap item dirender
+                const isAvail = item.available;
+                const hasMultipleImages = item.images.length > 1;
+
+                let sliderControls = '';
+                let dots = '';
+                
+                // Tambahkan Kontrol Slider bila foto > 1
+                if(hasMultipleImages) {
+                    sliderControls = `
+                        <button onclick="slideImage('${item.id}', -1); event.stopPropagation();" class="absolute left-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10094;</button>
+                        <button onclick="slideImage('${item.id}', 1); event.stopPropagation();" class="absolute right-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10095;</button>
+                    `;
+                    let dotsHtml = item.images.map((_, idx) => `<div class="${idx === 0 ? 'w-2 h-2 rounded-full bg-gold' : 'w-2 h-2 rounded-full bg-white/50'}"></div>`).join('');
+                    dots = `<div id="dots-${item.id}" class="absolute bottom-3 left-0 w-full flex justify-center gap-1 z-10">${dotsHtml}</div>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="group cursor-pointer" onclick="${isAvail ? `openBookingModal('${item.id}')` : ''}">
+                        <div class="relative overflow-hidden bg-gray-100 aspect-[3/4] mb-4">
+                            <span class="${isAvail ? 'bg-dark/80 text-gold' : 'bg-primary/90 text-white'} text-[10px] uppercase tracking-widest px-3 py-1 absolute top-4 right-4 border border-gold/30 z-20">${isAvail ? 'Tersedia' : 'Disewa'}</span>
+                            <div class="w-full h-full relative">
+                                <img id="img-${item.id}" src="${item.images[0]}" class="w-full h-full object-cover transition duration-700 ${!isAvail ? 'grayscale opacity-70' : 'group-hover:scale-105'}">
+                                ${sliderControls}
+                                ${dots}
+                            </div>
+                        </div>
+                        <div class="text-center px-2">
+                            <h3 class="font-serif font-bold text-lg text-dark mb-1 truncate" title="${item.name}">${item.name}</h3>
+                            <p class="text-primary font-semibold text-sm">${formatRupiah(item.price)}</p>
+                            ${isAvail ? `<span class="mt-3 inline-block text-xs uppercase tracking-widest font-bold border-b border-dark pb-1 group-hover:text-gold group-hover:border-gold transition">Pesan Sekarang</span>` : `<span class="mt-3 block text-xs text-gray-400">Tidak Tersedia</span>`}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- SISTEM PEMESANAN SEWA ---
+        function openBookingModal(itemId) {
+            const item = catalogData.find(i => i.id === itemId);
+            if(!item) return;
+            document.getElementById('form-item-id').value = itemId;
+            document.getElementById('booking-item-details').innerHTML = `
+                <div class="flex items-center gap-4 border border-gray-100 p-2 bg-gray-50">
+                    <img src="${item.images[0]}" class="w-16 h-16 object-cover rounded-sm">
+                    <div>
+                        <h4 class="font-bold text-sm text-dark">${item.name}</h4>
+                        <p class="text-primary text-xs font-bold">${formatRupiah(item.price)}</p>
+                    </div>
+                </div>
+            `;
+            openModal('modal-booking');
+        }
+
+        function submitBooking(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('form-item-id').value;
+            const item = catalogData.find(i => i.id === itemId);
+            
+            orderData.push({ orderId: 'INV-' + Math.floor(Math.random() * 1000), itemName: item.name, name: document.getElementById('form-name').value, wa: document.getElementById('form-wa').value, total: item.price + 100000, status: 'Disewa' });
+            item.available = false;
+
+            closeModal('modal-booking'); renderCatalog('semua');
+            showSuccessAlert("Pesanan Dikonfirmasi", "Terima kasih telah memilih IndCollection.", `<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3 uppercase font-bold text-xs mt-2 hover:bg-black transition">Tutup</button>`);
+        }
+
+        // --- ADMIN DASHBOARD & CRUD LOGIC ---
+        function handleLogin(e) {
+            e.preventDefault();
+            if (document.getElementById('admin-password').value === 'admin123') {
+                closeModal('modal-admin-login'); document.getElementById('login-error').classList.add('hide');
+                navigate('admin-dashboard');
+                switchAdminTab('katalog'); // Buka tab Kelola Katalog sebagai default
+                renderAdminKatalog();
+            } else {
+                document.getElementById('login-error').classList.remove('hide');
+            }
+        }
+        function logoutAdmin() { navigate('home'); }
+
+        function switchAdminTab(tab) {
+            ['sewa', 'custom', 'katalog'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const cont = document.getElementById(`admin-${t}-container`);
+                if(t === tab) {
+                    btn.className = 'px-6 py-3 bg-primary text-white font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md whitespace-nowrap';
+                    cont.classList.remove('hide');
+                } else {
+                    btn.className = 'px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap';
+                    cont.classList.add('hide');
+                }
+            });
+        }
+
+        function renderAdminKatalog() {
+            const tb = document.getElementById('admin-katalog-table'); tb.innerHTML = '';
+            if (catalogData.length === 0) {
+                tb.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400 italic font-serif">Katalog Kosong.</td></tr>`;
+                return;
+            }
+            
+            const sortedData = [...catalogData].reverse();
+            sortedData.forEach(item => {
+                tb.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition border-b border-gray-100">
+                        <td class="p-4">
+                            <div class="w-16 h-20 bg-gray-200 overflow-hidden border border-gray-300">
+                                <img src="${item.images[0]}" class="w-full h-full object-cover">
+                            </div>
+                        </td>
+                        <td class="px-4 py-4">
+                            <p class="text-sm font-bold text-dark">${item.name}</p>
+                            <p class="text-[10px] text-gray-400 font-mono mt-1">ID: ${item.id}</p>
+                            <p class="text-[10px] text-primary mt-1">${item.images.length} Foto Tersimpan</p>
+                        </td>
+                        <td class="px-4 py-4 text-xs uppercase tracking-widest text-gray-600">${item.category}</td>
+                        <td class="px-4 py-4 text-sm font-bold text-dark">${formatRupiah(item.price)}</td>
+                        <td class="px-4 py-4">
+                            <span class="${item.available ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'} border px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider">
+                                ${item.available ? 'Ready' : 'Disewa'}
+                            </span>
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="flex flex-col gap-2 w-max">
+                                <button onclick="openEditItemModal('${item.id}')" class="bg-dark text-gold px-3 py-1 text-[10px] uppercase font-bold hover:bg-black transition">Edit Data</button>
+                                <button onclick="deleteItem('${item.id}')" class="bg-transparent border border-primary text-primary px-3 py-1 text-[10px] uppercase font-bold hover:bg-primary hover:text-white transition">Hapus</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openManageItemModal() {
+            document.getElementById('manage-modal-title').innerText = "Tambah Item Baju Baru";
+            document.getElementById('manage-mode').value = 'add';
+            document.getElementById('manage-item-form').reset();
+            openModal('modal-manage-item');
+        }
+
+        function openEditItemModal(id) {
+            const item = catalogData.find(i => i.id === id);
+            if(!item) return;
+
+            document.getElementById('manage-modal-title').innerText = "Edit Data: " + item.name;
+            document.getElementById('manage-mode').value = 'edit';
+            document.getElementById('manage-id').value = item.id;
+            
+            document.getElementById('manage-name').value = item.name;
+            document.getElementById('manage-category').value = item.category;
+            document.getElementById('manage-price').value = item.price;
+            document.getElementById('manage-status').value = item.available.toString();
+            
+            document.getElementById('manage-img-1').value = item.images[0] || '';
+            document.getElementById('manage-img-2').value = item.images[1] || '';
+            document.getElementById('manage-img-3').value = item.images[2] || '';
+
+            openModal('modal-manage-item');
+        }
+
+        function submitManageItem(e) {
+            e.preventDefault();
+            const mode = document.getElementById('manage-mode').value;
+            const name = document.getElementById('manage-name').value;
+            const category = document.getElementById('manage-category').value;
+            const price = parseInt(document.getElementById('manage-price').value);
+            const available = document.getElementById('manage-status').value === 'true';
+            
+            // Kumpulkan link foto, buang yang kosong
+            const img1 = document.getElementById('manage-img-1').value;
+            const img2 = document.getElementById('manage-img-2').value;
+            const img3 = document.getElementById('manage-img-3').value;
+            const images = [img1, img2, img3].filter(img => img.trim() !== '');
+
+            if(mode === 'add') {
+                const newId = 'KB' + Math.floor(1000 + Math.random() * 9000);
+                catalogData.push({ id: newId, name, category, price, available, images });
+                // -- SIMULASI GOOGLE SHEETS -- (Panggil google.script.run disini nanti)
+            } else if (mode === 'edit') {
+                const id = document.getElementById('manage-id').value;
+                const index = catalogData.findIndex(i => i.id === id);
+                if(index > -1) {
+                    catalogData[index] = { id, name, category, price, available, images };
+                    // -- SIMULASI GOOGLE SHEETS --
+                }
+            }
+
+            closeModal('modal-manage-item');
+            renderAdminKatalog();
+            showSuccessAlert("Database Diperbarui", "Perubahan pada katalog telah disimpan.", `<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3 uppercase font-bold text-xs mt-2 hover:bg-black transition">Tutup</button>`);
+        }
+
+        function deleteItem(id) {
+            if(confirm("PERINGATAN: Apakah Anda yakin ingin menghapus baju ini secara permanen dari katalog?")) {
+                catalogData = catalogData.filter(i => i.id !== id);
+                // -- SIMULASI GOOGLE SHEETS -- (Panggil fungsi Hapus di GAS disini nanti)
+                renderAdminKatalog();
+            }
+        }
+
+        function showSuccessAlert(title, desc, btns) {
+            document.getElementById('success-title').innerText = title;
+            document.getElementById('success-desc').innerHTML = desc;
+            document.getElementById('success-actions').innerHTML = btns;
+            openModal('modal-success');
+        }
+    </script>
+</body>
+</html>
