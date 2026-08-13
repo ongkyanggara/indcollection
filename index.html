@@ -139,9 +139,9 @@
                 <div class="w-24 h-1 bg-gold mx-auto mt-6"></div>
             </div>
             <div class="flex flex-wrap justify-center gap-3 mb-12">
-                <button onclick="filterCatalog('semua')" class="filter-btn active bg-dark text-gold border border-dark px-6 py-2 text-sm uppercase tracking-wide transition-all">Semua</button>
-                <button onclick="filterCatalog('wisuda')" class="filter-btn bg-transparent text-dark border border-gray-300 hover:border-dark px-6 py-2 text-sm uppercase tracking-wide transition-all">Wisuda</button>
-                <button onclick="filterCatalog('pengantin')" class="filter-btn bg-transparent text-dark border border-gray-300 hover:border-dark px-6 py-2 text-sm uppercase tracking-wide transition-all">Pengantin</button>
+                <button onclick="filterCatalog('semua', event)" class="filter-btn active bg-dark text-gold border border-dark px-6 py-2 text-sm uppercase tracking-wide transition-all">Semua</button>
+                <button onclick="filterCatalog('wisuda', event)" class="filter-btn bg-transparent text-dark border border-gray-300 hover:border-dark px-6 py-2 text-sm uppercase tracking-wide transition-all">Wisuda</button>
+                <button onclick="filterCatalog('pengantin', event)" class="filter-btn bg-transparent text-dark border border-gray-300 hover:border-dark px-6 py-2 text-sm uppercase tracking-wide transition-all">Pengantin</button>
             </div>
             <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
         </section>
@@ -208,6 +208,7 @@
                 <button onclick="switchAdminTab('sewa')" id="tab-sewa" class="px-6 py-3 bg-primary text-white font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md whitespace-nowrap">Penyewaan</button>
                 <button onclick="switchAdminTab('custom')" id="tab-custom" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Pesanan Bespoke</button>
                 <button onclick="switchAdminTab('katalog')" id="tab-katalog" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Kelola Katalog <span class="text-gold ml-1">★</span></button>
+                <button onclick="switchAdminTab('promo')" id="tab-promo" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Promo & Harga</button>
             </div>
 
             <!-- Tables Containers -->
@@ -239,6 +240,30 @@
                         <tbody id="admin-katalog-table" class="bg-white divide-y divide-gray-100">
                             <!-- Dirender via JS -->
                         </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4: PROMO & HARGA - menggunakan gaya visual dashboard awal -->
+            <div id="admin-promo-container" class="hide bg-white shadow-lg border border-gray-100 rounded-b-md rounded-tr-md p-6">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
+                    <div>
+                        <h3 class="font-serif font-bold text-xl text-dark">Promo & Harga Event</h3>
+                        <p class="text-xs text-gray-500 mt-1">Atur promo otomatis tanpa mengubah harga dasar katalog.</p>
+                    </div>
+                    <button onclick="openPromoModal()" class="bg-dark text-gold px-4 py-2 hover:bg-black transition rounded-sm uppercase tracking-widest text-[10px] font-bold">+ Tambah Promo</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 text-gray-500"><tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Promo</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Nilai</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Periode</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Target</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Aksi</th>
+                        </tr></thead>
+                        <tbody id="admin-promo-table" class="bg-white divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -298,7 +323,7 @@
     <div id="modal-admin-login" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
         <div class="bg-white w-full max-w-sm p-8 shadow-2xl animate-modal-pop border-t-4 border-primary relative">
             <button onclick="closeModal('modal-admin-login')" class="absolute top-4 right-4 text-gray-400">X</button>
-            <h2 class="text-xl font-serif font-bold mb-4 text-center">Admin (admin123)</h2>
+            <h2 class="text-xl font-serif font-bold mb-4 text-center">Admin IndCollection</h2>
             <input type="password" id="admin-password" class="w-full border-b-2 p-2 mb-4 outline-none" placeholder="Password">
             <button onclick="handleLogin(event)" class="w-full bg-dark text-gold p-3 uppercase text-sm font-bold">Masuk</button>
             <p id="login-error" class="text-primary text-xs mt-2 text-center hide">Salah!</p>
@@ -315,9 +340,12 @@
                 <input type="hidden" id="form-item-id">
                 <input type="text" id="form-name" placeholder="Nama" class="w-full border p-2 mb-2" required>
                 <input type="tel" id="form-wa" placeholder="WA" class="w-full border p-2 mb-2" required>
-                <input type="date" id="form-date-start" class="w-full border p-2 mb-2" required>
-                <input type="date" id="form-date-end" class="w-full border p-2 mb-4" required>
-                <button type="submit" class="w-full bg-primary text-white p-3 font-bold">Sewa</button>
+                <input type="date" id="form-date-start" class="w-full border p-2 mb-2" onchange="updateBookingQuote()" required>
+                <input type="date" id="form-date-end" class="w-full border p-2 mb-2" onchange="updateBookingQuote()" required>
+                <input type="text" id="form-voucher" placeholder="Kode Voucher (opsional)" class="w-full border p-2 mb-3 uppercase" oninput="updateBookingQuote()">
+                <div id="booking-price-summary" class="bg-gray-50 border border-gray-100 p-3 mb-4 text-xs text-gray-600"></div>
+                <p id="booking-error" class="hide text-primary text-xs mb-3"></p>
+                <button type="submit" id="booking-submit-btn" class="w-full bg-primary text-white p-3 font-bold">Sewa</button>
             </form>
         </div>
     </div>
@@ -354,6 +382,18 @@
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Harga Sewa (Rp) *</label>
                             <input type="number" id="manage-price" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Harga Pembanding / Coret</label>
+                            <input type="number" id="manage-compare-price" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" placeholder="Opsional">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Deposit (Rp)</label>
+                            <input type="number" id="manage-deposit" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" value="100000">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Cleaning Fee (Rp)</label>
+                            <input type="number" id="manage-cleaning" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" value="0">
                         </div>
 
                         <div class="col-span-2">
@@ -518,6 +558,67 @@
         </div>
     </div>
 
+
+    <!-- MODAL PROMO: mengikuti bahasa visual form admin awal -->
+    <div id="modal-promo" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modal-pop shadow-2xl relative">
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm z-10 px-8 py-5 border-b border-gray-100 flex justify-between items-center">
+                <h3 id="promo-modal-title" class="text-xl font-serif font-bold text-primary">Tambah Promo</h3>
+                <button onclick="closeModal('modal-promo')" class="text-gray-400 hover:text-primary">X</button>
+            </div>
+            <form id="promo-form" onsubmit="submitPromo(event)" class="p-8">
+                <input type="hidden" id="promo-mode" value="add"><input type="hidden" id="promo-id">
+                <div class="grid grid-cols-2 gap-5">
+                    <div class="col-span-2"><label class="block text-xs font-bold uppercase tracking-wider mb-1">Nama Promo *</label><input id="promo-name" class="w-full border-b p-2" required></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Kode Voucher</label><input id="promo-code" class="w-full border-b p-2 uppercase" placeholder="Kosong = otomatis"></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Jenis *</label><select id="promo-type" class="w-full border-b p-2"><option value="percent">Persentase (%)</option><option value="nominal">Nominal (Rp)</option></select></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Nilai *</label><input id="promo-value" type="number" min="0" class="w-full border-b p-2" required></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Minimal Transaksi</label><input id="promo-min" type="number" min="0" value="0" class="w-full border-b p-2"></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Mulai *</label><input id="promo-start" type="date" class="w-full border-b p-2" required></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Berakhir *</label><input id="promo-end" type="date" class="w-full border-b p-2" required></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Target</label><select id="promo-scope" class="w-full border-b p-2" onchange="togglePromoTarget()"><option value="all">Semua Produk</option><option value="category">Kategori</option><option value="product">Produk</option></select></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Target ID/Kategori</label><input id="promo-target" class="w-full border-b p-2" placeholder="wisuda / KB001"></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold uppercase tracking-wider mb-1">Status</label><select id="promo-active" class="w-full border-b p-2"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></div>
+                </div>
+                <button class="w-full bg-primary text-white px-4 py-4 mt-7 hover:bg-primaryDark transition uppercase tracking-widest text-sm font-bold">Simpan Promo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PEMBAYARAN -->
+    <div id="modal-payment" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white w-full max-w-xl animate-modal-pop shadow-2xl relative">
+            <div class="px-8 py-5 border-b flex justify-between"><h3 class="text-xl font-serif font-bold text-primary">Pembayaran & Diskon</h3><button onclick="closeModal('modal-payment')" class="text-gray-400">X</button></div>
+            <form onsubmit="submitPayment(event)" class="p-8">
+                <input id="payment-order-id" type="hidden">
+                <div id="payment-order-summary" class="bg-gray-50 border p-4 mb-5 text-sm"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Diskon</label><select id="payment-discount-type" class="w-full border p-2"><option value="none">Tanpa Diskon</option><option value="percent">Persentase</option><option value="nominal">Nominal</option></select></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Nilai Diskon</label><input id="payment-discount-value" type="number" min="0" value="0" class="w-full border p-2"></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold uppercase tracking-wider mb-1">Alasan Diskon</label><input id="payment-discount-reason" class="w-full border p-2" placeholder="Contoh: Repeat customer / Event"></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Nominal Bayar *</label><input id="payment-amount" type="number" min="0" class="w-full border p-2" required></div>
+                    <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Metode</label><select id="payment-method" class="w-full border p-2"><option>Transfer</option><option>QRIS</option><option>Cash</option><option>EDC</option></select></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold uppercase tracking-wider mb-1">Catatan</label><input id="payment-notes" class="w-full border p-2"></div>
+                </div>
+                <button class="w-full bg-primary text-white p-3 mt-6 font-bold uppercase tracking-widest text-xs">Simpan Pembayaran</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL WHATSAPP PREVIEW -->
+    <div id="modal-wa-preview" class="hide fixed inset-0 z-[70] flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white w-full max-w-xl animate-modal-pop shadow-2xl relative p-8">
+            <button onclick="closeModal('modal-wa-preview')" class="absolute top-4 right-4 text-gray-400">X</button>
+            <h3 class="text-xl font-serif font-bold text-primary mb-2">Pesan WhatsApp Otomatis</h3>
+            <p class="text-xs text-gray-500 mb-4">Teks dapat diperiksa atau disalin sebelum membuka WhatsApp.</p>
+            <textarea id="wa-preview-text" rows="13" class="w-full border p-3 text-sm bg-gray-50"></textarea>
+            <div class="grid grid-cols-2 gap-3 mt-4">
+                <button onclick="copyWAText()" class="border border-dark text-dark p-3 text-xs uppercase font-bold">Salin Teks</button>
+                <button onclick="openWAFromPreview()" class="bg-green-600 text-white p-3 text-xs uppercase font-bold">Buka WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL SUKSES -->
     <div id="modal-success" class="hide fixed inset-0 z-[60] flex items-center justify-center p-4 modal-bg">
         <div class="bg-white w-full max-w-sm text-center p-8 animate-modal-pop border-t-4 border-gold shadow-2xl">
@@ -529,341 +630,262 @@
 
 
     <script>
-        // --- JAM REALTIME DENGAN TANGGAL, TAHUN, DETIK LENGKAP ---
-        function updateClock() {
-            const now = new Date();
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            
-            const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} WIB`;
-            
-            document.getElementById('realtime-clock').innerHTML = `<span class="hidden sm:inline">${dateStr} | </span><span class="text-gold font-bold">${timeStr}</span>`;
-        }
-        setInterval(updateClock, 1000); updateClock();
+        // ================================================================
+        // INDCOLLECTION - FUNCTIONAL ENGINE V3
+        // Tampilan publik tetap mengikuti desain awal; blok ini mengembangkan
+        // database, booking, promo, pembayaran, invoice, WA, dan admin CRUD.
+        // ================================================================
 
-        // --- STATE & NAVIGASI (Dengan Fitur Multi-Gambar) ---
-        let catalogData = [
-            { 
-                id: 'KB001', name: 'Kebaya Wisuda Modern Ruby', category: 'wisuda', price: 175000, available: true, 
-                images: [
-                    'https://images.unsplash.com/photo-1610484518382-748a80d563be?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
-                    'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80' // Foto 2 untuk efek slider
-                ] 
-            },
-            { 
-                id: 'KB002', name: 'Royal White Wedding Dress', category: 'pengantin', price: 850000, available: true, 
-                images: [
-                    'https://images.unsplash.com/photo-1588667635956-613b5e43a9a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'
-                ] 
-            }
+        // GANTI dengan URL Web App Apps Script setelah Code.gs di-deploy.
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx3klAavDiHs7mbbdI65-s2T18_eyNUCQZFgD62htKeBWa9tYD7S8o1_bBt_ikuJHRF/exec';
+        const STORE_WA = '6281220007780';
+        const API_READY = () => API_URL && !API_URL.includes('PASTE_GOOGLE');
+        const LS_KEY = 'indcollection_v3_cache';
+        const TOKEN_KEY = 'indcollection_admin_token';
+
+        const DEFAULT_PRODUCTS = [
+            { id:'KB001', name:'Kebaya Wisuda Modern Ruby', category:'wisuda', price:175000, comparePrice:0, deposit:100000, cleaningFee:0, available:true, images:[
+                'https://images.unsplash.com/photo-1610484518382-748a80d563be?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+                'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'
+            ]},
+            { id:'KB002', name:'Royal White Wedding Dress', category:'pengantin', price:850000, comparePrice:0, deposit:250000, cleaningFee:50000, available:true, images:[
+                'https://images.unsplash.com/photo-1588667635956-613b5e43a9a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'
+            ]}
         ];
 
-        let orderData = []; 
-        let currentSlideIndex = {}; // Untuk menyimpan state slider pada masing-masing item
+        let catalogData = [];
+        let orderData = [];
+        let customOrderData = [];
+        let promoData = [];
+        let currentSlideIndex = {};
+        let estimasiSaatIni = 280000;
+        let waPreviewPhone = STORE_WA;
+        let activeCatalogFilter = 'semua';
 
-        function closeMobileMenu() { document.getElementById('mobile-menu').classList.add('hide'); }
-        
-        function navigate(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hide'));
-            document.getElementById(`view-${viewId}`).classList.remove('hide');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (viewId === 'catalog') renderCatalog('semua');
+        const HARGA_BASIC = 280000, HARGA_KAIN = 200000, HARGA_PAYET_RINGAN = 150000, HARGA_PAYET_FULL = 450000, HARGA_FURING = 100000;
+
+        // ---------- UTIL ----------
+        function updateClock() {
+            const now = new Date();
+            const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+            const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')} WIB`;
+            const el = document.getElementById('realtime-clock');
+            if(el) el.innerHTML = `<span class="hidden sm:inline">${dateStr} | </span><span class="text-gold font-bold">${timeStr}</span>`;
+        }
+        setInterval(updateClock,1000);
+
+        function formatRupiah(angka) { return 'Rp ' + Number(angka || 0).toLocaleString('id-ID'); }
+        function escapeHtml(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+        function normalizeWA(v='') { let x=String(v).replace(/\D/g,''); if(x.startsWith('0')) x='62'+x.slice(1); if(!x.startsWith('62')) x='62'+x; return x; }
+        function dateID(s) { if(!s) return '-'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}); }
+        function nowISODate(){ return new Date().toISOString().slice(0,10); }
+        function makeLocalId(prefix){ const d=new Date(); return `${prefix}-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(Date.now()).slice(-6)}`; }
+        function getToken(){ return sessionStorage.getItem(TOKEN_KEY)||''; }
+        function saveCache(){ localStorage.setItem(LS_KEY, JSON.stringify({products:catalogData,orders:orderData,bespoke:customOrderData,promos:promoData})); }
+        function loadCache(){ try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(e){ return {}; } }
+
+        async function api(action, data={}, protectedAction=false){
+            if(!API_READY()) throw new Error('API_NOT_CONFIGURED');
+            const payload = {action, data, token: protectedAction ? getToken() : ''};
+            const body = new URLSearchParams({payload:JSON.stringify(payload)});
+            const res = await fetch(API_URL,{method:'POST',body,redirect:'follow'});
+            if(!res.ok) throw new Error('HTTP_'+res.status);
+            const out = await res.json();
+            if(!out.ok) throw new Error(out.error || 'API_ERROR');
+            return out;
         }
 
-        function openModal(modalId) { document.getElementById(modalId).classList.remove('hide'); document.body.style.overflow = 'hidden'; }
-        function closeModal(modalId) { document.getElementById(modalId).classList.add('hide'); document.body.style.overflow = 'auto'; }
-
-        function openCustomDressModal() { calculateEstimasi(); openModal('modal-custom-dress'); }
-        function openAdminLoginModal() { openModal('modal-admin-login'); }
-
-        // --- KALKULATOR BESPOKE ---
-        const HARGA_BASIC = 280000;
-        const HARGA_KAIN = 200000;
-        const HARGA_PAYET_RINGAN = 150000;
-        const HARGA_PAYET_FULL = 450000;
-        const HARGA_FURING = 100000;
-        let estimasiSaatIni = HARGA_BASIC;
-
-        function togglePayet(jenis) {
-            if(jenis === 'ringan' && document.getElementById('opt-payet-ringan').checked) { document.getElementById('opt-payet-full').checked = false; }
-            else if(jenis === 'full' && document.getElementById('opt-payet-full').checked) { document.getElementById('opt-payet-ringan').checked = false; }
+        async function bootstrap(){
+            const cache = loadCache();
+            catalogData = cache.products?.length ? cache.products : [...DEFAULT_PRODUCTS];
+            orderData = cache.orders || [];
+            customOrderData = cache.bespoke || [];
+            promoData = cache.promos || [];
+            if(API_READY()){
+                try{
+                    const out = await api('bootstrap');
+                    catalogData = out.products || catalogData;
+                    promoData = out.promos || [];
+                    saveCache();
+                }catch(err){ console.warn('Bootstrap API gagal, cache lokal dipakai:',err.message); }
+            }
+            renderCatalog(activeCatalogFilter);
+            updateClock();
         }
 
-        function calculateEstimasi() {
-            let total = HARGA_BASIC;
-            const isKain = document.getElementById('opt-kain').checked;
-            const isPayetRingan = document.getElementById('opt-payet-ringan').checked;
-            const isPayetFull = document.getElementById('opt-payet-full').checked;
-            const isFuring = document.getElementById('opt-furing').checked;
+        function closeMobileMenu(){ document.getElementById('mobile-menu')?.classList.add('hide'); }
+        function navigate(viewId){
+            document.querySelectorAll('.view-section').forEach(el=>el.classList.add('hide'));
+            document.getElementById(`view-${viewId}`)?.classList.remove('hide');
+            window.scrollTo({top:0,behavior:'smooth'});
+            if(viewId==='catalog') renderCatalog(activeCatalogFilter);
+        }
+        function openModal(id){ document.getElementById(id)?.classList.remove('hide'); document.body.style.overflow='hidden'; }
+        function closeModal(id){ document.getElementById(id)?.classList.add('hide'); document.body.style.overflow='auto'; }
+        function showSuccessAlert(title,desc,btns){ document.getElementById('success-title').innerText=title; document.getElementById('success-desc').innerHTML=desc; document.getElementById('success-actions').innerHTML=btns; openModal('modal-success'); }
 
-            if(isKain) total += HARGA_KAIN;
-            if(isPayetRingan) total += HARGA_PAYET_RINGAN;
-            if(isPayetFull) total += HARGA_PAYET_FULL;
-            if(isFuring) total += HARGA_FURING;
-
-            document.getElementById('calc-kain').classList.toggle('hide', !isKain);
-            document.getElementById('calc-payet-ringan').classList.toggle('hide', !isPayetRingan);
-            document.getElementById('calc-payet-full').classList.toggle('hide', !isPayetFull);
-            document.getElementById('calc-furing').classList.toggle('hide', !isFuring);
-
-            estimasiSaatIni = total;
-            document.getElementById('total-estimasi').innerText = formatRupiah(total);
+        // ---------- PRICING / PROMO ----------
+        function isPromoActive(p, product, voucher=''){
+            if(!p || String(p.active).toLowerCase()==='false') return false;
+            const today=nowISODate(); if(p.startDate && today<p.startDate) return false; if(p.endDate && today>p.endDate) return false;
+            const code=(p.code||'').trim().toUpperCase();
+            if(code && code !== String(voucher||'').trim().toUpperCase()) return false;
+            if(p.scope==='category' && String(p.target||'').toLowerCase()!==String(product.category||'').toLowerCase()) return false;
+            if(p.scope==='product' && String(p.target||'')!==String(product.id||'')) return false;
+            return true;
+        }
+        function priceQuote(product,voucher=''){
+            const base=Number(product.price||0), cleaning=Number(product.cleaningFee||0), deposit=Number(product.deposit||0);
+            let promo=null, discount=0;
+            const eligible=promoData.filter(p=>isPromoActive(p,product,voucher) && base>=Number(p.minTransaction||0));
+            eligible.forEach(p=>{
+                const d=p.type==='percent' ? Math.round(base*Number(p.value||0)/100) : Number(p.value||0);
+                if(d>discount){discount=Math.min(base,d);promo=p;}
+            });
+            return {base,cleaning,deposit,promo,discount,subtotal:base+cleaning+deposit,total:Math.max(0,base+cleaning+deposit-discount)};
+        }
+        function catalogPriceHtml(item){
+            const q=priceQuote(item,'');
+            const compare=Number(item.comparePrice||0);
+            if(q.promo){ return `${compare>q.base?`<span class="text-gray-400 line-through text-xs mr-2">${formatRupiah(compare)}</span>`:''}<span class="text-primary font-semibold text-sm">${formatRupiah(q.base-q.discount)}</span><div class="text-[9px] uppercase tracking-widest text-gold font-bold mt-1">${escapeHtml(q.promo.name)}</div>`; }
+            if(compare>q.base) return `<span class="text-gray-400 line-through text-xs mr-2">${formatRupiah(compare)}</span><span class="text-primary font-semibold text-sm">${formatRupiah(q.base)}</span>`;
+            return `<span class="text-primary font-semibold text-sm">${formatRupiah(q.base)}</span>`;
         }
 
-        function submitCustomOrder(e) {
+        // ---------- BESPOKE ----------
+        function openCustomDressModal(){ calculateEstimasi(); openModal('modal-custom-dress'); }
+        function togglePayet(jenis){ if(jenis==='ringan'&&document.getElementById('opt-payet-ringan').checked) document.getElementById('opt-payet-full').checked=false; if(jenis==='full'&&document.getElementById('opt-payet-full').checked) document.getElementById('opt-payet-ringan').checked=false; }
+        function calculateEstimasi(){
+            let total=HARGA_BASIC;
+            const k=document.getElementById('opt-kain').checked, r=document.getElementById('opt-payet-ringan').checked, f=document.getElementById('opt-payet-full').checked, i=document.getElementById('opt-furing').checked;
+            if(k)total+=HARGA_KAIN;if(r)total+=HARGA_PAYET_RINGAN;if(f)total+=HARGA_PAYET_FULL;if(i)total+=HARGA_FURING;
+            document.getElementById('calc-kain').classList.toggle('hide',!k);document.getElementById('calc-payet-ringan').classList.toggle('hide',!r);document.getElementById('calc-payet-full').classList.toggle('hide',!f);document.getElementById('calc-furing').classList.toggle('hide',!i);
+            estimasiSaatIni=total; document.getElementById('total-estimasi').innerText=formatRupiah(total);
+        }
+        async function submitCustomOrder(e){
             e.preventDefault();
-            const cdId = 'Bespoke-' + Math.floor(Math.random() * 10000);
-            const name = document.getElementById('cd-name').value;
+            const obj={
+                id:makeLocalId('BSP'), createdAt:new Date().toISOString(), name:document.getElementById('cd-name').value.trim(), wa:normalizeWA(document.getElementById('cd-wa').value),
+                chest:Number(document.getElementById('cd-dada').value), waist:Number(document.getElementById('cd-pinggang').value), hip:Number(document.getElementById('cd-pinggul').value), shoulder:Number(document.getElementById('cd-bahu').value), length:Number(document.getElementById('cd-panjangbaju').value), notes:document.getElementById('cd-notes').value.trim(),
+                premiumFabric:document.getElementById('opt-kain').checked, lightBeads:document.getElementById('opt-payet-ringan').checked, fullBeads:document.getElementById('opt-payet-full').checked, lining:document.getElementById('opt-furing').checked,
+                estimate:estimasiSaatIni,status:'Lead'
+            };
+            try{ if(API_READY()){ const out=await api('createBespoke',obj); Object.assign(obj,out.bespoke||{}); } else { customOrderData.push(obj); saveCache(); } }
+            catch(err){ showSuccessAlert('Gagal Menyimpan','Koneksi database gagal: '+escapeHtml(err.message),`<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3">Tutup</button>`); return; }
             closeModal('modal-custom-dress');
-            
-            const waMsg = `Halo Tim IndCollection,%0ASaya telah mengisi form Bespoke Dress (ID: ${cdId}).%0ANama: ${name}%0AEstimasi Awal di Web: *${formatRupiah(estimasiSaatIni)}*%0A%0AMohon panduannya untuk konsultasi lebih lanjut mengenai bahan dan ukuran.`;
-            showSuccessAlert(
-                "Estimasi Tersimpan", 
-                `Total Estimasi Awal Anda adalah <b>${formatRupiah(estimasiSaatIni)}</b>. Silakan lanjutkan komunikasi ke WhatsApp Desainer kami untuk fiksasi harga dan model.`,
-                `<a href="https://wa.me/6281220007780?text=${waMsg}" target="_blank" onclick="closeModal('modal-success')" class="block w-full bg-dark text-gold border border-dark px-4 py-3 hover:bg-black transition text-xs uppercase tracking-widest font-bold text-center">Lanjut ke WhatsApp</a>
-                 <button onclick="closeModal('modal-success'); document.getElementById('custom-dress-form').reset();" class="w-full text-gray-400 hover:text-dark py-3 mt-1 text-xs uppercase tracking-widest font-bold">Tutup</button>`
-            );
+            const msg=buildBespokeWA(obj); showWAPreview(STORE_WA,msg);
+            document.getElementById('custom-dress-form').reset(); calculateEstimasi();
+        }
+        function buildBespokeWA(o){
+            const extras=[o.premiumFabric?'Kain Premium':'',o.lightBeads?'Payet Ringan':'',o.fullBeads?'Full Payet/Bordir':'',o.lining?'Furing Dalam':''].filter(Boolean).join(', ')||'-';
+            return `Halo Tim IndCollection,\n\nSaya telah mengisi formulir *Bespoke / Custom Dress*.\n\nID: *${o.id}*\nNama: ${o.name}\nWhatsApp: +${o.wa}\n\n*Ukuran (cm)*\nLingkar Dada: ${o.chest}\nLingkar Pinggang: ${o.waist}\nLingkar Pinggul: ${o.hip}\nLebar Bahu: ${o.shoulder}\nPanjang Dress: ${o.length}\n\nDetail Tambahan: ${extras}\nCatatan Model: ${o.notes||'-'}\n\n*Estimasi Awal: ${formatRupiah(o.estimate)}*\n\nMohon panduannya untuk konsultasi dan penawaran harga final. Terima kasih.`;
         }
 
-        // --- KATALOG & SLIDER UTILS ---
-        function formatRupiah(angka) { return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
-
-        function filterCatalog(category) {
-            document.querySelectorAll('.filter-btn').forEach(btn => { btn.classList.remove('bg-dark', 'text-gold', 'active'); btn.classList.add('bg-transparent', 'text-dark'); });
-            event.currentTarget.classList.remove('bg-transparent', 'text-dark'); event.currentTarget.classList.add('bg-dark', 'text-gold', 'active');
-            renderCatalog(category);
-        }
-
-        // Fungsi Slider Gambar
-        function slideImage(itemId, direction) {
-            const item = catalogData.find(i => i.id === itemId);
-            if (!item || item.images.length <= 1) return;
-            
-            const maxIdx = item.images.length;
-            currentSlideIndex[itemId] = (currentSlideIndex[itemId] + direction + maxIdx) % maxIdx;
-            
-            document.getElementById(`img-${itemId}`).src = item.images[currentSlideIndex[itemId]];
-            
-            const dotsContainer = document.getElementById(`dots-${itemId}`);
-            if(dotsContainer) {
-                Array.from(dotsContainer.children).forEach((dot, idx) => {
-                    dot.className = idx === currentSlideIndex[itemId] ? 'w-2 h-2 rounded-full bg-gold' : 'w-2 h-2 rounded-full bg-white/50';
-                });
-            }
-        }
-
-        function renderCatalog(categoryFilter) {
-            const grid = document.getElementById('catalog-grid'); grid.innerHTML = '';
-            const filtered = categoryFilter === 'semua' ? catalogData : catalogData.filter(i => i.category === categoryFilter);
-            
-            filtered.forEach(item => {
-                currentSlideIndex[item.id] = 0; // Inisiasi index ke 0 tiap item dirender
-                const isAvail = item.available;
-                const hasMultipleImages = item.images.length > 1;
-
-                let sliderControls = '';
-                let dots = '';
-                
-                // Tambahkan Kontrol Slider bila foto > 1
-                if(hasMultipleImages) {
-                    sliderControls = `
-                        <button onclick="slideImage('${item.id}', -1); event.stopPropagation();" class="absolute left-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10094;</button>
-                        <button onclick="slideImage('${item.id}', 1); event.stopPropagation();" class="absolute right-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10095;</button>
-                    `;
-                    let dotsHtml = item.images.map((_, idx) => `<div class="${idx === 0 ? 'w-2 h-2 rounded-full bg-gold' : 'w-2 h-2 rounded-full bg-white/50'}"></div>`).join('');
-                    dots = `<div id="dots-${item.id}" class="absolute bottom-3 left-0 w-full flex justify-center gap-1 z-10">${dotsHtml}</div>`;
-                }
-
-                grid.innerHTML += `
-                    <div class="group cursor-pointer" onclick="${isAvail ? `openBookingModal('${item.id}')` : ''}">
-                        <div class="relative overflow-hidden bg-gray-100 aspect-[3/4] mb-4">
-                            <span class="${isAvail ? 'bg-dark/80 text-gold' : 'bg-primary/90 text-white'} text-[10px] uppercase tracking-widest px-3 py-1 absolute top-4 right-4 border border-gold/30 z-20">${isAvail ? 'Tersedia' : 'Disewa'}</span>
-                            <div class="w-full h-full relative">
-                                <img id="img-${item.id}" src="${item.images[0]}" class="w-full h-full object-cover transition duration-700 ${!isAvail ? 'grayscale opacity-70' : 'group-hover:scale-105'}">
-                                ${sliderControls}
-                                ${dots}
-                            </div>
-                        </div>
-                        <div class="text-center px-2">
-                            <h3 class="font-serif font-bold text-lg text-dark mb-1 truncate" title="${item.name}">${item.name}</h3>
-                            <p class="text-primary font-semibold text-sm">${formatRupiah(item.price)}</p>
-                            ${isAvail ? `<span class="mt-3 inline-block text-xs uppercase tracking-widest font-bold border-b border-dark pb-1 group-hover:text-gold group-hover:border-gold transition">Pesan Sekarang</span>` : `<span class="mt-3 block text-xs text-gray-400">Tidak Tersedia</span>`}
-                        </div>
-                    </div>
-                `;
+        // ---------- CATALOG ----------
+        function filterCatalog(category,ev){ activeCatalogFilter=category; document.querySelectorAll('.filter-btn').forEach(btn=>{btn.classList.remove('bg-dark','text-gold','active');btn.classList.add('bg-transparent','text-dark');}); const btn=ev?.currentTarget||window.event?.currentTarget; if(btn){btn.classList.remove('bg-transparent','text-dark');btn.classList.add('bg-dark','text-gold','active');} renderCatalog(category); }
+        function slideImage(itemId,direction,ev){ ev?.stopPropagation(); const item=catalogData.find(i=>i.id===itemId); if(!item||!item.images||item.images.length<=1)return; const max=item.images.length; currentSlideIndex[itemId]=((currentSlideIndex[itemId]||0)+direction+max)%max; document.getElementById(`img-${itemId}`).src=item.images[currentSlideIndex[itemId]]; const dots=document.getElementById(`dots-${itemId}`); if(dots)Array.from(dots.children).forEach((dot,idx)=>dot.className=idx===currentSlideIndex[itemId]?'w-2 h-2 rounded-full bg-gold':'w-2 h-2 rounded-full bg-white/50'); }
+        function renderCatalog(category='semua'){
+            const grid=document.getElementById('catalog-grid'); if(!grid)return; grid.innerHTML=''; const filtered=category==='semua'?catalogData:catalogData.filter(i=>i.category===category);
+            if(!filtered.length){ grid.innerHTML='<div class="col-span-full text-center py-12 text-gray-400">Koleksi belum tersedia.</div>'; return; }
+            filtered.forEach(item=>{
+                item.images=Array.isArray(item.images)?item.images.filter(Boolean):[]; if(!item.images.length)item.images=['https://placehold.co/600x800?text=IndCollection']; currentSlideIndex[item.id]=0; const isAvail=String(item.available)!=='false'&&item.available!==false; const multi=item.images.length>1;
+                const controls=multi?`<button onclick="slideImage('${item.id}',-1,event);event.stopPropagation();" class="absolute left-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10094;</button><button onclick="slideImage('${item.id}',1,event);event.stopPropagation();" class="absolute right-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10095;</button>`:'';
+                const dots=multi?`<div id="dots-${item.id}" class="absolute bottom-3 left-0 w-full flex justify-center gap-1 z-10">${item.images.map((_,idx)=>`<div class="w-2 h-2 rounded-full ${idx===0?'bg-gold':'bg-white/50'}"></div>`).join('')}</div>`:'';
+                grid.innerHTML+=`<div class="group cursor-pointer" onclick="${isAvail?`openBookingModal('${item.id}')`:''}"><div class="relative overflow-hidden bg-gray-100 aspect-[3/4] mb-4"><span class="${isAvail?'bg-dark/80 text-gold':'bg-primary/90 text-white'} text-[10px] uppercase tracking-widest px-3 py-1 absolute top-4 right-4 border border-gold/30 z-20">${isAvail?'Tersedia':'Tidak Aktif'}</span><div class="w-full h-full relative"><img id="img-${item.id}" src="${escapeHtml(item.images[0])}" class="w-full h-full object-cover transition duration-700 ${!isAvail?'grayscale opacity-70':'group-hover:scale-105'}">${controls}${dots}</div></div><div class="text-center px-2"><h3 class="font-serif font-bold text-lg text-dark mb-1 truncate" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</h3><div>${catalogPriceHtml(item)}</div>${isAvail?'<span class="mt-3 inline-block text-xs uppercase tracking-widest font-bold border-b border-dark pb-1 group-hover:text-gold group-hover:border-gold transition">Pesan Sekarang</span>':'<span class="mt-3 block text-xs text-gray-400">Tidak Tersedia</span>'}</div></div>`;
             });
         }
 
-        // --- SISTEM PEMESANAN SEWA ---
-        function openBookingModal(itemId) {
-            const item = catalogData.find(i => i.id === itemId);
-            if(!item) return;
-            document.getElementById('form-item-id').value = itemId;
-            document.getElementById('booking-item-details').innerHTML = `
-                <div class="flex items-center gap-4 border border-gray-100 p-2 bg-gray-50">
-                    <img src="${item.images[0]}" class="w-16 h-16 object-cover rounded-sm">
-                    <div>
-                        <h4 class="font-bold text-sm text-dark">${item.name}</h4>
-                        <p class="text-primary text-xs font-bold">${formatRupiah(item.price)}</p>
-                    </div>
-                </div>
-            `;
-            openModal('modal-booking');
+        // ---------- BOOKING ----------
+        function openBookingModal(itemId){
+            const item=catalogData.find(i=>i.id===itemId); if(!item)return;
+            document.getElementById('form-item-id').value=itemId; document.getElementById('form-voucher').value=''; document.getElementById('booking-error').classList.add('hide');
+            document.getElementById('booking-item-details').innerHTML=`<div class="flex items-center gap-4 border border-gray-100 p-2 bg-gray-50"><img src="${escapeHtml(item.images[0])}" class="w-16 h-16 object-cover rounded-sm"><div><h4 class="font-bold text-sm text-dark">${escapeHtml(item.name)}</h4><div>${catalogPriceHtml(item)}</div></div></div>`;
+            updateBookingQuote(); openModal('modal-booking');
+        }
+        function updateBookingQuote(){
+            const item=catalogData.find(i=>i.id===document.getElementById('form-item-id').value); if(!item)return; const q=priceQuote(item,document.getElementById('form-voucher')?.value||'');
+            document.getElementById('booking-price-summary').innerHTML=`<div class="flex justify-between"><span>Harga Sewa</span><b>${formatRupiah(q.base)}</b></div>${q.cleaning?`<div class="flex justify-between"><span>Cleaning Fee</span><b>${formatRupiah(q.cleaning)}</b></div>`:''}${q.deposit?`<div class="flex justify-between"><span>Deposit</span><b>${formatRupiah(q.deposit)}</b></div>`:''}${q.discount?`<div class="flex justify-between text-primary"><span>${escapeHtml(q.promo?.name||'Promo')}</span><b>- ${formatRupiah(q.discount)}</b></div>`:''}<div class="flex justify-between border-t mt-2 pt-2 text-dark"><span class="font-bold">Total</span><b class="text-primary">${formatRupiah(q.total)}</b></div>`;
+        }
+        async function submitBooking(e){
+            e.preventDefault(); const btn=document.getElementById('booking-submit-btn'); const errEl=document.getElementById('booking-error'); errEl.classList.add('hide');
+            const item=catalogData.find(i=>i.id===document.getElementById('form-item-id').value); const start=document.getElementById('form-date-start').value,end=document.getElementById('form-date-end').value;
+            if(!start||!end||end<start){errEl.innerText='Tanggal sewa/pengembalian tidak valid.';errEl.classList.remove('hide');return;}
+            const q=priceQuote(item,document.getElementById('form-voucher').value);
+            let order={id:makeLocalId('INV'),createdAt:new Date().toISOString(),productId:item.id,itemName:item.name,name:document.getElementById('form-name').value.trim(),wa:normalizeWA(document.getElementById('form-wa').value),startDate:start,endDate:end,voucher:document.getElementById('form-voucher').value.trim().toUpperCase(),basePrice:q.base,cleaningFee:q.cleaning,deposit:q.deposit,promoId:q.promo?.id||'',promoName:q.promo?.name||'',promoDiscount:q.discount,manualDiscount:0,manualDiscountReason:'',finalTotal:q.total,paid:0,balance:q.total,paymentStatus:'UNPAID',status:'Pending'};
+            btn.disabled=true; btn.innerText='Menyimpan...';
+            try{
+                if(API_READY()){ const out=await api('createOrder',order); order=out.order; if(!orderData.some(o=>o.id===order.id)) orderData.push(order); saveCache(); }
+                else { const conflict=orderData.some(o=>o.productId===order.productId&&o.status!=='Cancelled'&&start<=o.endDate&&end>=o.startDate); if(conflict)throw new Error('Tanggal bentrok dengan booking lain.'); orderData.push(order); saveCache(); }
+                closeModal('modal-booking'); document.querySelector('#modal-booking form')?.reset();
+                showWAPreview(STORE_WA,buildBookingWA(order));
+            }catch(err){ errEl.innerText=String(err.message).includes('BOOKING_CONFLICT')?'Tanggal tersebut sudah dibooking. Silakan pilih tanggal lain.':err.message; errEl.classList.remove('hide'); }
+            finally{btn.disabled=false;btn.innerText='Sewa';}
+        }
+        function buildBookingWA(o){ return `Halo Tim IndCollection,\n\nSaya ingin mengonfirmasi booking berikut:\n\n*INDCOLLECTION - BOOKING SEWA*\nNo. Booking: *${o.id}*\nNama: ${o.name}\nProduk: ${o.itemName} (${o.productId})\nTanggal Sewa: ${dateID(o.startDate)}\nTanggal Kembali: ${dateID(o.endDate)}\n\nHarga Sewa: ${formatRupiah(o.basePrice)}\n${o.cleaningFee?`Cleaning Fee: ${formatRupiah(o.cleaningFee)}\n`:''}${o.deposit?`Deposit: ${formatRupiah(o.deposit)}\n`:''}${o.promoDiscount?`${o.promoName||'Promo'}: -${formatRupiah(o.promoDiscount)}\n`:''}*Total: ${formatRupiah(o.finalTotal)}*\nStatus Pembayaran: ${o.paymentStatus}\n\nMohon konfirmasi booking dan informasi pembayaran/DP. Terima kasih.`; }
+
+        // ---------- WHATSAPP ----------
+        function showWAPreview(phone,text){ waPreviewPhone=normalizeWA(phone||STORE_WA); document.getElementById('wa-preview-text').value=text; openModal('modal-wa-preview'); }
+        function copyWAText(){ const el=document.getElementById('wa-preview-text'); navigator.clipboard?.writeText(el.value).then(()=>{const old=document.getElementById('success-title');}).catch(()=>{el.select();document.execCommand('copy');}); }
+        function openWAFromPreview(){ const text=document.getElementById('wa-preview-text').value; window.open(`https://wa.me/${waPreviewPhone}?text=${encodeURIComponent(text)}`,'_blank'); }
+
+        // ---------- ADMIN AUTH ----------
+        function openAdminLoginModal(){ document.getElementById('login-error').classList.add('hide'); document.getElementById('admin-password').value=''; openModal('modal-admin-login'); }
+        async function handleLogin(e){
+            e.preventDefault(); const pass=document.getElementById('admin-password').value; const error=document.getElementById('login-error');
+            if(!API_READY()){ error.innerText='Hubungkan API_URL Apps Script terlebih dahulu untuk login admin.'; error.classList.remove('hide'); return; }
+            try{ const out=await api('login',{password:pass}); sessionStorage.setItem(TOKEN_KEY,out.token); closeModal('modal-admin-login'); navigate('admin-dashboard'); await refreshAdminData(); switchAdminTab('sewa'); }
+            catch(err){ error.innerText=err.message==='ADMIN_NOT_CONFIGURED'?'Password admin belum diset di Code.gs. Jalankan setAdminPassword().':'Password salah / koneksi gagal.'; error.classList.remove('hide'); }
+        }
+        function logoutAdmin(){ sessionStorage.removeItem(TOKEN_KEY); navigate('home'); }
+        async function refreshAdminData(){
+            try{ const out=await api('adminData',{},true); catalogData=out.products||[]; orderData=out.orders||[]; customOrderData=out.bespoke||[]; promoData=out.promos||[]; saveCache(); renderAdminOrders();renderAdminCustom();renderAdminKatalog();renderAdminPromo();renderCatalog(activeCatalogFilter); }
+            catch(err){ if(String(err.message).includes('AUTH')){logoutAdmin();showSuccessAlert('Sesi Berakhir','Silakan login kembali.',`<button onclick="closeModal('modal-success');openAdminLoginModal()" class="w-full bg-dark text-gold p-3">Login</button>`);} else console.error(err); }
+        }
+        function switchAdminTab(tab){ ['sewa','custom','katalog','promo'].forEach(t=>{ const btn=document.getElementById(`tab-${t}`),cont=document.getElementById(`admin-${t}-container`); if(!btn||!cont)return; if(t===tab){btn.className='px-6 py-3 bg-primary text-white font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md whitespace-nowrap';cont.classList.remove('hide');}else{btn.className='px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap';cont.classList.add('hide');}}); if(tab==='sewa')renderAdminOrders();if(tab==='custom')renderAdminCustom();if(tab==='katalog')renderAdminKatalog();if(tab==='promo')renderAdminPromo(); }
+
+        // ---------- ADMIN ORDERS ----------
+        function renderAdminOrders(){ const tb=document.getElementById('admin-orders-table'); if(!tb)return; if(!orderData.length){tb.innerHTML='<tr><td class="p-8 text-center text-gray-400">Belum ada penyewaan.</td></tr>';return;} tb.innerHTML='<tr class="bg-gray-50 text-[10px] uppercase tracking-wider text-gray-500"><th class="p-3 text-left">Invoice</th><th class="p-3 text-left">Pelanggan</th><th class="p-3 text-left">Produk / Tanggal</th><th class="p-3 text-left">Total</th><th class="p-3 text-left">Pembayaran</th><th class="p-3 text-left">Status</th><th class="p-3 text-left">Aksi</th></tr>'+[...orderData].reverse().map(o=>`<tr class="border-b hover:bg-gray-50"><td class="p-3"><b class="text-xs">${escapeHtml(o.id)}</b><div class="text-[9px] text-gray-400">${(o.createdAt||'').slice(0,10)}</div></td><td class="p-3"><div class="text-xs font-bold">${escapeHtml(o.name)}</div><div class="text-[10px] text-gray-500">+${escapeHtml(o.wa)}</div></td><td class="p-3"><div class="text-xs">${escapeHtml(o.itemName)}</div><div class="text-[10px] text-gray-500">${dateID(o.startDate)} – ${dateID(o.endDate)}</div></td><td class="p-3 text-xs font-bold">${formatRupiah(o.finalTotal)}</td><td class="p-3"><div class="text-[10px] font-bold ${o.paymentStatus==='PAID'?'text-green-700':'text-primary'}">${escapeHtml(o.paymentStatus)}</div><div class="text-[10px]">Bayar ${formatRupiah(o.paid)}<br>Sisa ${formatRupiah(o.balance)}</div></td><td class="p-3"><select onchange="updateOrderStatus('${o.id}',this.value)" class="border text-[10px] p-1"><option ${o.status==='Pending'?'selected':''}>Pending</option><option ${o.status==='Confirmed'?'selected':''}>Confirmed</option><option ${o.status==='In Use'?'selected':''}>In Use</option><option ${o.status==='Returned'?'selected':''}>Returned</option><option ${o.status==='Cancelled'?'selected':''}>Cancelled</option></select></td><td class="p-3"><div class="flex flex-col gap-1 w-max"><button onclick="openPaymentModal('${o.id}')" class="bg-primary text-white px-2 py-1 text-[9px] uppercase font-bold">Bayar / Diskon</button><button onclick="generateInvoice('${o.id}')" class="bg-dark text-gold px-2 py-1 text-[9px] uppercase font-bold">Nota PDF</button><button onclick="adminOrderWA('${o.id}')" class="border border-green-600 text-green-700 px-2 py-1 text-[9px] uppercase font-bold">WhatsApp</button></div></td></tr>`).join(''); }
+        async function updateOrderStatus(id,status){ try{ await api('updateOrder',{id,status},true); const o=orderData.find(x=>x.id===id); if(o)o.status=status; saveCache(); }catch(err){alert('Gagal: '+err.message);await refreshAdminData();} }
+        function openPaymentModal(id){ const o=orderData.find(x=>x.id===id); if(!o)return; document.getElementById('payment-order-id').value=id; document.getElementById('payment-discount-type').value='none';document.getElementById('payment-discount-value').value=0;document.getElementById('payment-discount-reason').value='';document.getElementById('payment-amount').value='';document.getElementById('payment-notes').value=''; document.getElementById('payment-order-summary').innerHTML=`<b>${escapeHtml(o.id)} — ${escapeHtml(o.name)}</b><div class="mt-2 flex justify-between"><span>Total saat ini</span><b>${formatRupiah(o.finalTotal)}</b></div><div class="flex justify-between"><span>Sudah dibayar</span><b>${formatRupiah(o.paid)}</b></div><div class="flex justify-between text-primary"><span>Sisa</span><b>${formatRupiah(o.balance)}</b></div>`;openModal('modal-payment'); }
+        async function submitPayment(e){ e.preventDefault(); const id=document.getElementById('payment-order-id').value; const payload={id,discountType:document.getElementById('payment-discount-type').value,discountValue:Number(document.getElementById('payment-discount-value').value||0),discountReason:document.getElementById('payment-discount-reason').value.trim(),amount:Number(document.getElementById('payment-amount').value||0),method:document.getElementById('payment-method').value,notes:document.getElementById('payment-notes').value.trim()}; try{const out=await api('addPayment',payload,true); const idx=orderData.findIndex(x=>x.id===id); if(idx>=0)orderData[idx]=out.order; saveCache();closeModal('modal-payment');renderAdminOrders();showWAPreview(out.order.wa,buildPaymentWA(out.order,out.payment));}catch(err){alert('Gagal menyimpan pembayaran: '+err.message);} }
+        function buildPaymentWA(o,p){return `Halo Kak ${o.name}, terima kasih telah memilih *IndCollection*. 🌷\n\n*PEMBAYARAN INDCOLLECTION*\nNo. Invoice: *${o.id}*\nProduk: ${o.itemName}\nPembayaran: ${formatRupiah(p?.amount||0)} (${p?.method||'-'})\n${o.manualDiscount?`Diskon: -${formatRupiah(o.manualDiscount)}${o.manualDiscountReason?` (${o.manualDiscountReason})`:''}\n`:''}Total Final: *${formatRupiah(o.finalTotal)}*\nSudah Dibayar: ${formatRupiah(o.paid)}\nSisa: *${formatRupiah(o.balance)}*\nStatus: *${o.paymentStatus}*\n\nSimpan pesan/nota ini sebagai bukti transaksi. Terima kasih.`;}
+        function adminOrderWA(id){const o=orderData.find(x=>x.id===id);if(!o)return;showWAPreview(o.wa,`Halo Kak ${o.name}, berikut ringkasan booking IndCollection.\n\nNo. Invoice: *${o.id}*\nProduk: ${o.itemName}\nSewa: ${dateID(o.startDate)} – ${dateID(o.endDate)}\nTotal: *${formatRupiah(o.finalTotal)}*\nSudah Dibayar: ${formatRupiah(o.paid)}\nSisa: ${formatRupiah(o.balance)}\nStatus Booking: ${o.status}\nStatus Pembayaran: ${o.paymentStatus}\n\nTerima kasih.`);}
+
+        // ---------- PDF INVOICE ----------
+        function generateInvoice(id){
+            const o=orderData.find(x=>x.id===id); if(!o)return; if(!window.jspdf?.jsPDF){alert('Library PDF belum termuat.');return;} const {jsPDF}=window.jspdf; const doc=new jsPDF();
+            doc.setFillColor(123,17,19);doc.rect(0,0,210,30,'F');doc.setTextColor(212,175,55);doc.setFont('times','bold');doc.setFontSize(22);doc.text('IndCollection',15,19);doc.setFontSize(9);doc.setTextColor(255,255,255);doc.text('Exclusive Kebaya & Bespoke Dress',15,25);
+            doc.setTextColor(30,30,30);doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('INVOICE / NOTA',195,18,{align:'right'});doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text(o.id,195,24,{align:'right'});
+            let y=43; doc.setFont('helvetica','bold');doc.text('Pelanggan',15,y);doc.setFont('helvetica','normal');doc.text(o.name,15,y+6);doc.text('+'+o.wa,15,y+11);doc.setFont('helvetica','bold');doc.text('Periode Sewa',110,y);doc.setFont('helvetica','normal');doc.text(`${dateID(o.startDate)} - ${dateID(o.endDate)}`,110,y+6);
+            y=68;doc.setDrawColor(220);doc.line(15,y,195,y);y+=10; const row=(label,value,bold=false)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.text(label,18,y);doc.text(value,192,y,{align:'right'});y+=7;};
+            row(o.itemName,formatRupiah(o.basePrice),true); if(o.cleaningFee)row('Cleaning Fee',formatRupiah(o.cleaningFee)); if(o.deposit)row('Deposit',formatRupiah(o.deposit)); if(o.promoDiscount)row(o.promoName||'Promo','- '+formatRupiah(o.promoDiscount)); if(o.manualDiscount)row('Diskon '+(o.manualDiscountReason||''),'- '+formatRupiah(o.manualDiscount)); doc.line(15,y,195,y);y+=8;row('TOTAL',formatRupiah(o.finalTotal),true);row('SUDAH DIBAYAR',formatRupiah(o.paid));row('SISA PEMBAYARAN',formatRupiah(o.balance),true);
+            y+=7;doc.setFillColor(o.paymentStatus==='PAID'?230:250,o.paymentStatus==='PAID'?245:235,o.paymentStatus==='PAID'?230:235);doc.rect(15,y,180,15,'F');doc.setFont('helvetica','bold');doc.text(`STATUS: ${o.paymentStatus}`,20,y+9);y+=28;doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(90);doc.text('Terima kasih telah memilih IndCollection.',15,y);doc.text('Jl. Ridwan Rais Gg. Ainan No.9, Bandar Lampung | WA +62 812-2000-7780',15,y+6);
+            doc.save(`IndCollection_${o.id}_${o.name.replace(/[^a-z0-9]+/gi,'-')}.pdf`);
         }
 
-        function submitBooking(e) {
-            e.preventDefault();
-            const itemId = document.getElementById('form-item-id').value;
-            const item = catalogData.find(i => i.id === itemId);
-            
-            orderData.push({ orderId: 'INV-' + Math.floor(Math.random() * 1000), itemName: item.name, name: document.getElementById('form-name').value, wa: document.getElementById('form-wa').value, total: item.price + 100000, status: 'Disewa' });
-            item.available = false;
+        // ---------- ADMIN BESPOKE ----------
+        function renderAdminCustom(){const tb=document.getElementById('admin-custom-table');if(!tb)return;if(!customOrderData.length){tb.innerHTML='<tr><td class="p-8 text-center text-gray-400">Belum ada pesanan Bespoke.</td></tr>';return;}tb.innerHTML='<tr class="bg-gray-50 text-[10px] uppercase tracking-wider text-gray-500"><th class="p-3 text-left">ID</th><th class="p-3 text-left">Pelanggan</th><th class="p-3 text-left">Ukuran / Detail</th><th class="p-3 text-left">Estimasi</th><th class="p-3 text-left">Status</th><th class="p-3 text-left">WA</th></tr>'+[...customOrderData].reverse().map(o=>`<tr class="border-b"><td class="p-3 text-xs font-bold">${escapeHtml(o.id)}</td><td class="p-3"><b class="text-xs">${escapeHtml(o.name)}</b><div class="text-[10px]">+${escapeHtml(o.wa)}</div></td><td class="p-3 text-[10px]">Dada ${o.chest} | Pinggang ${o.waist} | Pinggul ${o.hip}<br>${escapeHtml(o.notes||'-')}</td><td class="p-3 text-xs font-bold">${formatRupiah(o.estimate)}</td><td class="p-3"><select onchange="updateBespokeStatus('${o.id}',this.value)" class="border text-[10px] p-1">${['Lead','Quotation','DP','Production','Fitting','Done'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="p-3"><button onclick="adminBespokeWA('${o.id}')" class="border border-green-600 text-green-700 px-2 py-1 text-[9px] uppercase font-bold">WhatsApp</button></td></tr>`).join('');}
+        async function updateBespokeStatus(id,status){try{await api('updateBespoke',{id,status},true);const o=customOrderData.find(x=>x.id===id);if(o)o.status=status;saveCache();}catch(err){alert('Gagal: '+err.message);}}
+        function adminBespokeWA(id){const o=customOrderData.find(x=>x.id===id);if(!o)return;showWAPreview(o.wa,buildBespokeWA(o));}
 
-            closeModal('modal-booking'); renderCatalog('semua');
-            showSuccessAlert("Pesanan Dikonfirmasi", "Terima kasih telah memilih IndCollection.", `<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3 uppercase font-bold text-xs mt-2 hover:bg-black transition">Tutup</button>`);
-        }
+        // ---------- ADMIN CATALOG CRUD ----------
+        function renderAdminKatalog(){const tb=document.getElementById('admin-katalog-table');if(!tb)return;if(!catalogData.length){tb.innerHTML='<tr><td colspan="6" class="p-6 text-center text-gray-400 italic font-serif">Katalog Kosong.</td></tr>';return;}tb.innerHTML='';[...catalogData].reverse().forEach(item=>{tb.innerHTML+=`<tr class="hover:bg-gray-50 transition border-b border-gray-100"><td class="p-4"><div class="w-16 h-20 bg-gray-200 overflow-hidden border border-gray-300"><img src="${escapeHtml(item.images?.[0]||'')}" class="w-full h-full object-cover"></div></td><td class="px-4 py-4"><p class="text-sm font-bold text-dark">${escapeHtml(item.name)}</p><p class="text-[10px] text-gray-400 font-mono mt-1">ID: ${escapeHtml(item.id)}</p><p class="text-[10px] text-primary mt-1">${item.images?.length||0} Foto Tersimpan</p></td><td class="px-4 py-4 text-xs uppercase tracking-widest text-gray-600">${escapeHtml(item.category)}</td><td class="px-4 py-4 text-sm font-bold text-dark">${formatRupiah(item.price)}${Number(item.comparePrice)>Number(item.price)?`<div class="text-[10px] text-gray-400 line-through">${formatRupiah(item.comparePrice)}</div>`:''}</td><td class="px-4 py-4"><span class="${String(item.available)!=='false'&&item.available!==false?'bg-green-100 text-green-800 border-green-200':'bg-red-100 text-red-800 border-red-200'} border px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider">${String(item.available)!=='false'&&item.available!==false?'Ready':'Nonaktif'}</span></td><td class="px-4 py-4"><div class="flex flex-col gap-2 w-max"><button onclick="openEditItemModal('${item.id}')" class="bg-dark text-gold px-3 py-1 text-[10px] uppercase font-bold hover:bg-black transition">Edit Data</button><button onclick="deleteItem('${item.id}')" class="bg-transparent border border-primary text-primary px-3 py-1 text-[10px] uppercase font-bold hover:bg-primary hover:text-white transition">Hapus</button></div></td></tr>`;});}
+        function openManageItemModal(){document.getElementById('manage-modal-title').innerText='Tambah Item Baju Baru';document.getElementById('manage-mode').value='add';document.getElementById('manage-item-form').reset();document.getElementById('manage-deposit').value=100000;document.getElementById('manage-cleaning').value=0;openModal('modal-manage-item');}
+        function openEditItemModal(id){const item=catalogData.find(i=>i.id===id);if(!item)return;document.getElementById('manage-modal-title').innerText='Edit Data: '+item.name;document.getElementById('manage-mode').value='edit';document.getElementById('manage-id').value=item.id;document.getElementById('manage-name').value=item.name;document.getElementById('manage-category').value=item.category;document.getElementById('manage-price').value=item.price;document.getElementById('manage-compare-price').value=item.comparePrice||'';document.getElementById('manage-deposit').value=item.deposit||0;document.getElementById('manage-cleaning').value=item.cleaningFee||0;document.getElementById('manage-status').value=String(item.available);document.getElementById('manage-img-1').value=item.images?.[0]||'';document.getElementById('manage-img-2').value=item.images?.[1]||'';document.getElementById('manage-img-3').value=item.images?.[2]||'';openModal('modal-manage-item');}
+        async function submitManageItem(e){e.preventDefault();const mode=document.getElementById('manage-mode').value;const item={id:mode==='edit'?document.getElementById('manage-id').value:'',name:document.getElementById('manage-name').value.trim(),category:document.getElementById('manage-category').value,price:Number(document.getElementById('manage-price').value),comparePrice:Number(document.getElementById('manage-compare-price').value||0),deposit:Number(document.getElementById('manage-deposit').value||0),cleaningFee:Number(document.getElementById('manage-cleaning').value||0),available:document.getElementById('manage-status').value==='true',images:[document.getElementById('manage-img-1').value,document.getElementById('manage-img-2').value,document.getElementById('manage-img-3').value].filter(v=>v.trim())};try{const out=await api('upsertProduct',item,true);const saved=out.product;const idx=catalogData.findIndex(x=>x.id===saved.id);if(idx>=0)catalogData[idx]=saved;else catalogData.push(saved);saveCache();closeModal('modal-manage-item');renderAdminKatalog();renderCatalog(activeCatalogFilter);showSuccessAlert('Database Diperbarui','Perubahan katalog telah disimpan ke Google Sheet.',`<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3 uppercase font-bold text-xs">Tutup</button>`);}catch(err){alert('Gagal menyimpan: '+err.message);}}
+        async function deleteItem(id){if(!confirm('PERINGATAN: Hapus item ini dari katalog?'))return;try{await api('deleteProduct',{id},true);catalogData=catalogData.filter(i=>i.id!==id);saveCache();renderAdminKatalog();renderCatalog(activeCatalogFilter);}catch(err){alert('Gagal menghapus: '+err.message);}}
 
-        // --- ADMIN DASHBOARD & CRUD LOGIC ---
-        function handleLogin(e) {
-            e.preventDefault();
-            if (document.getElementById('admin-password').value === 'admin123') {
-                closeModal('modal-admin-login'); document.getElementById('login-error').classList.add('hide');
-                navigate('admin-dashboard');
-                switchAdminTab('katalog'); // Buka tab Kelola Katalog sebagai default
-                renderAdminKatalog();
-            } else {
-                document.getElementById('login-error').classList.remove('hide');
-            }
-        }
-        function logoutAdmin() { navigate('home'); }
+        // ---------- ADMIN PROMO ----------
+        function renderAdminPromo(){const tb=document.getElementById('admin-promo-table');if(!tb)return;if(!promoData.length){tb.innerHTML='<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada promo.</td></tr>';return;}tb.innerHTML=[...promoData].reverse().map(p=>`<tr class="border-b hover:bg-gray-50"><td class="p-3"><b class="text-xs">${escapeHtml(p.name)}</b><div class="text-[9px] text-primary">${p.code?escapeHtml(p.code):'PROMO OTOMATIS'}</div></td><td class="p-3 text-xs font-bold">${p.type==='percent'?`${p.value}%`:formatRupiah(p.value)}</td><td class="p-3 text-[10px]">${dateID(p.startDate)}<br>${dateID(p.endDate)}</td><td class="p-3 text-[10px] uppercase">${escapeHtml(p.scope)} ${p.target?'/ '+escapeHtml(p.target):''}</td><td class="p-3"><span class="${String(p.active)!=='false'?'text-green-700':'text-gray-400'} text-[10px] font-bold uppercase">${String(p.active)!=='false'?'Aktif':'Nonaktif'}</span></td><td class="p-3"><div class="flex flex-col gap-1 w-max"><button onclick="openPromoModal('${p.id}')" class="bg-dark text-gold px-2 py-1 text-[9px] uppercase font-bold">Edit</button><button onclick="deletePromo('${p.id}')" class="border border-primary text-primary px-2 py-1 text-[9px] uppercase font-bold">Hapus</button></div></td></tr>`).join('');}
+        function openPromoModal(id=''){document.getElementById('promo-form').reset();document.getElementById('promo-mode').value=id?'edit':'add';document.getElementById('promo-id').value=id;document.getElementById('promo-modal-title').innerText=id?'Edit Promo':'Tambah Promo';document.getElementById('promo-start').value=nowISODate();document.getElementById('promo-end').value=nowISODate();document.getElementById('promo-active').value='true';if(id){const p=promoData.find(x=>x.id===id);if(p){document.getElementById('promo-name').value=p.name;document.getElementById('promo-code').value=p.code||'';document.getElementById('promo-type').value=p.type;document.getElementById('promo-value').value=p.value;document.getElementById('promo-min').value=p.minTransaction||0;document.getElementById('promo-start').value=p.startDate;document.getElementById('promo-end').value=p.endDate;document.getElementById('promo-scope').value=p.scope;document.getElementById('promo-target').value=p.target||'';document.getElementById('promo-active').value=String(p.active);}}openModal('modal-promo');}
+        function togglePromoTarget(){const s=document.getElementById('promo-scope').value;document.getElementById('promo-target').disabled=s==='all';if(s==='all')document.getElementById('promo-target').value='';}
+        async function submitPromo(e){e.preventDefault();const p={id:document.getElementById('promo-id').value,name:document.getElementById('promo-name').value.trim(),code:document.getElementById('promo-code').value.trim().toUpperCase(),type:document.getElementById('promo-type').value,value:Number(document.getElementById('promo-value').value),minTransaction:Number(document.getElementById('promo-min').value||0),startDate:document.getElementById('promo-start').value,endDate:document.getElementById('promo-end').value,scope:document.getElementById('promo-scope').value,target:document.getElementById('promo-target').value.trim(),active:document.getElementById('promo-active').value==='true'};try{const out=await api('upsertPromo',p,true);const saved=out.promo;const idx=promoData.findIndex(x=>x.id===saved.id);if(idx>=0)promoData[idx]=saved;else promoData.push(saved);saveCache();closeModal('modal-promo');renderAdminPromo();renderCatalog(activeCatalogFilter);}catch(err){alert('Gagal menyimpan promo: '+err.message);}}
+        async function deletePromo(id){if(!confirm('Hapus promo ini?'))return;try{await api('deletePromo',{id},true);promoData=promoData.filter(x=>x.id!==id);saveCache();renderAdminPromo();renderCatalog(activeCatalogFilter);}catch(err){alert('Gagal: '+err.message);}}
 
-        function switchAdminTab(tab) {
-            ['sewa', 'custom', 'katalog'].forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                const cont = document.getElementById(`admin-${t}-container`);
-                if(t === tab) {
-                    btn.className = 'px-6 py-3 bg-primary text-white font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md whitespace-nowrap';
-                    cont.classList.remove('hide');
-                } else {
-                    btn.className = 'px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap';
-                    cont.classList.add('hide');
-                }
-            });
-        }
-
-        function renderAdminKatalog() {
-            const tb = document.getElementById('admin-katalog-table'); tb.innerHTML = '';
-            if (catalogData.length === 0) {
-                tb.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400 italic font-serif">Katalog Kosong.</td></tr>`;
-                return;
-            }
-            
-            const sortedData = [...catalogData].reverse();
-            sortedData.forEach(item => {
-                tb.innerHTML += `
-                    <tr class="hover:bg-gray-50 transition border-b border-gray-100">
-                        <td class="p-4">
-                            <div class="w-16 h-20 bg-gray-200 overflow-hidden border border-gray-300">
-                                <img src="${item.images[0]}" class="w-full h-full object-cover">
-                            </div>
-                        </td>
-                        <td class="px-4 py-4">
-                            <p class="text-sm font-bold text-dark">${item.name}</p>
-                            <p class="text-[10px] text-gray-400 font-mono mt-1">ID: ${item.id}</p>
-                            <p class="text-[10px] text-primary mt-1">${item.images.length} Foto Tersimpan</p>
-                        </td>
-                        <td class="px-4 py-4 text-xs uppercase tracking-widest text-gray-600">${item.category}</td>
-                        <td class="px-4 py-4 text-sm font-bold text-dark">${formatRupiah(item.price)}</td>
-                        <td class="px-4 py-4">
-                            <span class="${item.available ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'} border px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider">
-                                ${item.available ? 'Ready' : 'Disewa'}
-                            </span>
-                        </td>
-                        <td class="px-4 py-4">
-                            <div class="flex flex-col gap-2 w-max">
-                                <button onclick="openEditItemModal('${item.id}')" class="bg-dark text-gold px-3 py-1 text-[10px] uppercase font-bold hover:bg-black transition">Edit Data</button>
-                                <button onclick="deleteItem('${item.id}')" class="bg-transparent border border-primary text-primary px-3 py-1 text-[10px] uppercase font-bold hover:bg-primary hover:text-white transition">Hapus</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function openManageItemModal() {
-            document.getElementById('manage-modal-title').innerText = "Tambah Item Baju Baru";
-            document.getElementById('manage-mode').value = 'add';
-            document.getElementById('manage-item-form').reset();
-            openModal('modal-manage-item');
-        }
-
-        function openEditItemModal(id) {
-            const item = catalogData.find(i => i.id === id);
-            if(!item) return;
-
-            document.getElementById('manage-modal-title').innerText = "Edit Data: " + item.name;
-            document.getElementById('manage-mode').value = 'edit';
-            document.getElementById('manage-id').value = item.id;
-            
-            document.getElementById('manage-name').value = item.name;
-            document.getElementById('manage-category').value = item.category;
-            document.getElementById('manage-price').value = item.price;
-            document.getElementById('manage-status').value = item.available.toString();
-            
-            document.getElementById('manage-img-1').value = item.images[0] || '';
-            document.getElementById('manage-img-2').value = item.images[1] || '';
-            document.getElementById('manage-img-3').value = item.images[2] || '';
-
-            openModal('modal-manage-item');
-        }
-
-        function submitManageItem(e) {
-            e.preventDefault();
-            const mode = document.getElementById('manage-mode').value;
-            const name = document.getElementById('manage-name').value;
-            const category = document.getElementById('manage-category').value;
-            const price = parseInt(document.getElementById('manage-price').value);
-            const available = document.getElementById('manage-status').value === 'true';
-            
-            // Kumpulkan link foto, buang yang kosong
-            const img1 = document.getElementById('manage-img-1').value;
-            const img2 = document.getElementById('manage-img-2').value;
-            const img3 = document.getElementById('manage-img-3').value;
-            const images = [img1, img2, img3].filter(img => img.trim() !== '');
-
-            if(mode === 'add') {
-                const newId = 'KB' + Math.floor(1000 + Math.random() * 9000);
-                catalogData.push({ id: newId, name, category, price, available, images });
-                // -- SIMULASI GOOGLE SHEETS -- (Panggil google.script.run disini nanti)
-            } else if (mode === 'edit') {
-                const id = document.getElementById('manage-id').value;
-                const index = catalogData.findIndex(i => i.id === id);
-                if(index > -1) {
-                    catalogData[index] = { id, name, category, price, available, images };
-                    // -- SIMULASI GOOGLE SHEETS --
-                }
-            }
-
-            closeModal('modal-manage-item');
-            renderAdminKatalog();
-            showSuccessAlert("Database Diperbarui", "Perubahan pada katalog telah disimpan.", `<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3 uppercase font-bold text-xs mt-2 hover:bg-black transition">Tutup</button>`);
-        }
-
-        function deleteItem(id) {
-            if(confirm("PERINGATAN: Apakah Anda yakin ingin menghapus baju ini secara permanen dari katalog?")) {
-                catalogData = catalogData.filter(i => i.id !== id);
-                // -- SIMULASI GOOGLE SHEETS -- (Panggil fungsi Hapus di GAS disini nanti)
-                renderAdminKatalog();
-            }
-        }
-
-        function showSuccessAlert(title, desc, btns) {
-            document.getElementById('success-title').innerText = title;
-            document.getElementById('success-desc').innerHTML = desc;
-            document.getElementById('success-actions').innerHTML = btns;
-            openModal('modal-success');
-        }
+        document.addEventListener('DOMContentLoaded',bootstrap);
+        setInterval(()=>{ if(getToken() && !document.getElementById('view-admin-dashboard')?.classList.contains('hide')) refreshAdminData(); }, 60000);
     </script>
 </body>
 </html>
