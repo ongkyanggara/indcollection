@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF untuk generate Invoice -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- QR Code untuk referensi Invoice -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     
@@ -209,63 +211,76 @@
                 <button onclick="switchAdminTab('custom')" id="tab-custom" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Pesanan Bespoke</button>
                 <button onclick="switchAdminTab('katalog')" id="tab-katalog" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Kelola Katalog <span class="text-gold ml-1">★</span></button>
                 <button onclick="switchAdminTab('promo')" id="tab-promo" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Promo & Harga</button>
+                <button onclick="switchAdminTab('calendar')" id="tab-calendar" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Kalender</button>
+                <button onclick="switchAdminTab('reminder')" id="tab-reminder" class="px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap">Reminder</button>
             </div>
 
-            <!-- Tables Containers -->
+            <!-- PENYEWAAN -->
             <div id="admin-sewa-container" class="bg-white shadow-lg border border-gray-100 overflow-x-auto rounded-b-md rounded-tr-md">
                 <table class="min-w-full"><tbody id="admin-orders-table" class="bg-white divide-y divide-gray-100"></tbody></table>
             </div>
+
+            <!-- BESPOKE -->
             <div id="admin-custom-container" class="hide bg-white shadow-lg border border-gray-100 overflow-x-auto rounded-b-md rounded-tr-md">
                 <table class="min-w-full"><tbody id="admin-custom-table" class="bg-white divide-y divide-gray-100"></tbody></table>
             </div>
-            
-            <!-- TAB 3: Tabel KELOLA KATALOG -->
-            <div id="admin-katalog-container" class="hide bg-white shadow-lg border border-gray-100 rounded-b-md rounded-tr-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-serif font-bold text-xl text-dark">Database Baju & Dress</h3>
-                    <button onclick="openManageItemModal()" class="bg-dark text-gold px-4 py-2 hover:bg-black transition rounded-sm uppercase tracking-widest text-[10px] font-bold">+ Tambah Item Baru</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50 text-gray-500">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Foto</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Info Baju</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Kategori</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Harga Sewa</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-katalog-table" class="bg-white divide-y divide-gray-100">
-                            <!-- Dirender via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
-            <!-- TAB 4: PROMO & HARGA - menggunakan gaya visual dashboard awal -->
-            <div id="admin-promo-container" class="hide bg-white shadow-lg border border-gray-100 rounded-b-md rounded-tr-md p-6">
+            <!-- KELOLA KATALOG: form tetap mengikuti bahasa visual admin awal -->
+            <div id="admin-katalog-container" class="hide bg-white shadow-lg border border-gray-100 rounded-b-md rounded-tr-md p-6">
                 <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
                     <div>
-                        <h3 class="font-serif font-bold text-xl text-dark">Promo & Harga Event</h3>
-                        <p class="text-xs text-gray-500 mt-1">Atur promo otomatis tanpa mengubah harga dasar katalog.</p>
+                        <h3 class="font-serif font-bold text-xl text-dark">Database Baju & Dress</h3>
+                        <p class="text-xs text-gray-500 mt-1">Input dari Admin akan masuk ke sheet Products dan langsung dipakai oleh frontend.</p>
                     </div>
-                    <button onclick="openPromoModal()" class="bg-dark text-gold px-4 py-2 hover:bg-black transition rounded-sm uppercase tracking-widest text-[10px] font-bold">+ Tambah Promo</button>
+                    <div class="flex gap-2">
+                        <button id="sync-sheet-btn" onclick="syncSheetNow()" class="border border-dark text-dark px-4 py-2 hover:bg-dark hover:text-white transition rounded-sm uppercase tracking-widest text-[10px] font-bold">↻ Sinkronkan Sheet</button>
+                        <button onclick="openManageItemModal()" class="bg-dark text-gold px-4 py-2 hover:bg-black transition rounded-sm uppercase tracking-widest text-[10px] font-bold">+ Tambah Item Baru</button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50 text-gray-500"><tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Promo</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Nilai</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Periode</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Target</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Foto</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Info Baju</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Kategori</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Harga Sewa</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Aksi</th>
                         </tr></thead>
-                        <tbody id="admin-promo-table" class="bg-white divide-y divide-gray-100"></tbody>
+                        <tbody id="admin-katalog-table" class="bg-white divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- PROMO -->
+            <div id="admin-promo-container" class="hide bg-white shadow-lg border border-gray-100 rounded-b-md rounded-tr-md p-6">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
+                    <div><h3 class="font-serif font-bold text-xl text-dark">Promo & Harga Event</h3><p class="text-xs text-gray-500 mt-1">Atur promo otomatis tanpa mengubah harga dasar katalog.</p></div>
+                    <button onclick="openPromoModal()" class="bg-dark text-gold px-4 py-2 hover:bg-black transition rounded-sm uppercase tracking-widest text-[10px] font-bold">+ Tambah Promo</button>
+                </div>
+                <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50 text-gray-500"><tr><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Promo</th><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Nilai</th><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Periode</th><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Target</th><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Status</th><th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Aksi</th></tr></thead>
+                    <tbody id="admin-promo-table" class="bg-white divide-y divide-gray-100"></tbody>
+                </table></div>
+            </div>
+
+            <!-- KALENDER VISUAL -->
+            <div id="admin-calendar-container" class="hide bg-white shadow-lg border border-gray-100 rounded-b-md rounded-tr-md p-6">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-5">
+                    <div><h3 class="font-serif font-bold text-xl text-dark">Kalender Penyewaan</h3><p class="text-xs text-gray-500 mt-1">Melihat penggunaan baju per tanggal tanpa mengubah tampilan katalog pelanggan.</p></div>
+                    <div class="flex items-center gap-2"><button onclick="calendarPrev()" class="border px-3 py-2 text-xs">←</button><button onclick="calendarToday()" class="border px-3 py-2 text-[10px] uppercase font-bold">Hari Ini</button><button onclick="calendarNext()" class="border px-3 py-2 text-xs">→</button></div>
+                </div>
+                <h4 id="admin-calendar-title" class="font-serif text-xl text-primary mb-4"></h4>
+                <div id="admin-calendar-grid" class="grid grid-cols-7 border border-gray-100"></div>
+            </div>
+
+            <!-- REMINDER -->
+            <div id="admin-reminder-container" class="hide bg-white shadow-lg border border-gray-100 rounded-b-md rounded-tr-md">
+                <div class="p-6 border-b flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                    <div><h3 class="font-serif font-bold text-xl text-dark">Reminder Operasional</h3><p class="text-xs text-gray-500 mt-1">H-1 pengambilan, hari pengembalian, dan pelanggan terlambat. Pesan dibuka melalui WhatsApp setelah admin meninjau teks.</p></div>
+                    <button onclick="refreshReminders()" class="bg-dark text-gold px-4 py-2 text-[10px] uppercase tracking-widest font-bold">↻ Perbarui Reminder</button>
+                </div>
+                <div id="admin-reminder-list"></div>
             </div>
         </section>
 
@@ -350,87 +365,50 @@
         </div>
     </div>
 
-    <!-- MODAL MANAGE ITEM (TAMBAH/EDIT KATALOG) -->
+    <!-- MODAL MANAGE ITEM: tampilannya tetap satu keluarga dengan form admin awal -->
     <div id="modal-manage-item" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
-        <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar animate-modal-pop shadow-2xl relative">
+        <div class="bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar animate-modal-pop shadow-2xl relative">
             <div class="sticky top-0 bg-white/95 backdrop-blur-sm z-10 px-8 py-5 border-b border-gray-100 flex justify-between items-center">
-                <h3 id="manage-modal-title" class="text-xl font-serif font-bold text-primary">Tambah Item Katalog</h3>
+                <div><h3 id="manage-modal-title" class="text-xl font-serif font-bold text-primary">Tambah Item Katalog</h3><p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Form Admin → Spreadsheet → Frontend</p></div>
                 <button onclick="closeModal('modal-manage-item')" class="text-gray-400 hover:text-primary transition-colors">X</button>
             </div>
-            
             <div class="p-8">
                 <form id="manage-item-form" onsubmit="submitManageItem(event)">
-                    <input type="hidden" id="manage-mode" value="add">
-                    <input type="hidden" id="manage-id"> 
+                    <input type="hidden" id="manage-mode" value="add"><input type="hidden" id="manage-id">
+                    <input type="hidden" id="manage-fileid-1"><input type="hidden" id="manage-fileid-2"><input type="hidden" id="manage-fileid-3">
 
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-                        <div class="col-span-2">
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Kebaya / Dress *</label>
-                            <input type="text" id="manage-name" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" required>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kategori *</label>
-                            <select id="manage-category" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent text-sm" required>
-                                <option value="wisuda">Kebaya Wisuda</option>
-                                <option value="pengantin">Kebaya Pengantin</option>
-                                <option value="kutubaru">Kutubaru</option>
-                                <option value="dress">Gaun / Dress Modern</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Harga Sewa (Rp) *</label>
-                            <input type="number" id="manage-price" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Harga Pembanding / Coret</label>
-                            <input type="number" id="manage-compare-price" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" placeholder="Opsional">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Deposit (Rp)</label>
-                            <input type="number" id="manage-deposit" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" value="100000">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Cleaning Fee (Rp)</label>
-                            <input type="number" id="manage-cleaning" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent" value="0">
-                        </div>
-
-                        <div class="col-span-2">
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Status Ketersediaan</label>
-                            <select id="manage-status" class="w-full border-b border-gray-300 px-2 py-2 focus:border-primary outline-none bg-transparent text-sm">
-                                <option value="true">Tersedia (Ready)</option>
-                                <option value="false">Tidak Tersedia / Disewa</option>
-                            </select>
-                        </div>
+                    <div class="grid grid-cols-2 gap-5 mb-6">
+                        <div class="col-span-2"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nama Kebaya / Dress *</label><input type="text" id="manage-name" class="w-full border-b border-gray-300 px-2 py-2 outline-none bg-transparent" required></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kode Inventaris</label><input type="text" id="manage-inventory-code" class="w-full border-b border-gray-300 px-2 py-2 outline-none bg-transparent" placeholder="Contoh: KBY-WSD-001"></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kategori *</label><select id="manage-category" class="w-full border-b border-gray-300 px-2 py-2 bg-transparent text-sm" required><option value="wisuda">Kebaya Wisuda</option><option value="pengantin">Kebaya Pengantin</option><option value="kutubaru">Kutubaru</option><option value="dress">Gaun / Dress Modern</option></select></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Ukuran</label><input type="text" id="manage-size" class="w-full border-b border-gray-300 px-2 py-2" placeholder="S / M / L / XL / Custom"></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Warna</label><input type="text" id="manage-color" class="w-full border-b border-gray-300 px-2 py-2" placeholder="Ruby / Gold / White"></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Lokasi Penyimpanan</label><input type="text" id="manage-location" class="w-full border-b border-gray-300 px-2 py-2" placeholder="Rak A1 / Lemari 2"></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kondisi</label><select id="manage-condition" class="w-full border-b border-gray-300 px-2 py-2"><option>Baik</option><option>Perlu Perawatan</option><option>Maintenance</option><option>Rusak</option></select></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Denda Terlambat / Hari</label><input type="number" id="manage-late-fee" min="0" value="50000" class="w-full border-b border-gray-300 px-2 py-2"></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Harga Sewa (Rp) *</label><input type="number" id="manage-price" min="0" class="w-full border-b border-gray-300 px-2 py-2" required></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Harga Pembanding / Coret</label><input type="number" id="manage-compare-price" min="0" class="w-full border-b border-gray-300 px-2 py-2" placeholder="Opsional"></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Deposit (Rp)</label><input type="number" id="manage-deposit" min="0" value="100000" class="w-full border-b border-gray-300 px-2 py-2"></div>
+                        <div><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Cleaning Fee (Rp)</label><input type="number" id="manage-cleaning" min="0" value="0" class="w-full border-b border-gray-300 px-2 py-2"></div>
+                        <div class="col-span-2"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Status Ketersediaan</label><select id="manage-status" class="w-full border-b border-gray-300 px-2 py-2 text-sm"><option value="true">Tersedia (Ready)</option><option value="false">Nonaktif / Maintenance</option></select></div>
+                        <div class="col-span-2"><label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Deskripsi / Catatan Baju</label><textarea id="manage-description" rows="2" class="w-full border border-gray-300 p-2 text-sm" placeholder="Detail bahan, aksesori, catatan kondisi, dll."></textarea></div>
                     </div>
 
                     <div class="bg-gray-50 border border-gray-200 p-4 mb-6">
-                        <h4 class="text-xs font-bold text-dark uppercase tracking-widest mb-3 border-b pb-2">Manajemen Foto (URL Link)</h4>
-                        <p class="text-[10px] text-gray-500 mb-4">Sistem mendukung hingga 3 foto per baju. Masukkan link URL gambar. Foto 1 wajib diisi sebagai sampul.</p>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Foto 1 (Sampul Utama) *</label>
-                                <input type="url" id="manage-img-1" placeholder="https://..." class="w-full border p-2 text-xs focus:border-primary outline-none" required>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Foto 2 (Opsional)</label>
-                                <input type="url" id="manage-img-2" placeholder="https://..." class="w-full border p-2 text-xs focus:border-primary outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Foto 3 (Opsional)</label>
-                                <input type="url" id="manage-img-3" placeholder="https://..." class="w-full border p-2 text-xs focus:border-primary outline-none">
-                            </div>
+                        <h4 class="text-xs font-bold text-dark uppercase tracking-widest mb-1">Foto Baju — Upload Google Drive</h4>
+                        <p class="text-[10px] text-gray-500 mb-4">Pilih foto dari komputer. Sistem akan mengecilkan foto agar ringan, mengunggahnya ke folder <b>IndCollection Files / Product Photos</b> di Google Drive, lalu URL-nya disimpan ke sheet Products. URL manual tetap tersedia sebagai alternatif.</p>
+                        <div class="space-y-4">
+                            <div class="border-b pb-3"><label class="block text-[10px] font-bold uppercase mb-1">Foto 1 — Sampul Utama *</label><input type="file" id="manage-file-1" accept="image/jpeg,image/png,image/webp" class="w-full text-xs mb-2"><input type="url" id="manage-img-1" placeholder="Atau tempel URL foto..." class="w-full border p-2 text-xs"></div>
+                            <div class="border-b pb-3"><label class="block text-[10px] font-bold uppercase mb-1">Foto 2 — Opsional</label><input type="file" id="manage-file-2" accept="image/jpeg,image/png,image/webp" class="w-full text-xs mb-2"><input type="url" id="manage-img-2" placeholder="Atau tempel URL foto..." class="w-full border p-2 text-xs"></div>
+                            <div><label class="block text-[10px] font-bold uppercase mb-1">Foto 3 — Opsional</label><input type="file" id="manage-file-3" accept="image/jpeg,image/png,image/webp" class="w-full text-xs mb-2"><input type="url" id="manage-img-3" placeholder="Atau tempel URL foto..." class="w-full border p-2 text-xs"></div>
                         </div>
+                        <p id="manage-upload-status" class="text-[10px] text-primary font-bold mt-4"></p>
                     </div>
-
-                    <button type="submit" class="w-full bg-primary text-white px-4 py-4 hover:bg-primaryDark transition-colors uppercase tracking-widest text-sm font-bold shadow-lg">Simpan Data Baju</button>
+                    <button id="manage-submit-btn" type="submit" class="w-full bg-primary text-white px-4 py-4 hover:bg-primaryDark transition-colors uppercase tracking-widest text-sm font-bold shadow-lg">Simpan Data Baju</button>
                 </form>
             </div>
         </div>
     </div>
-
 
     <!-- ================= MODAL: CUSTOM DRESS DENGAN ESTIMASI HARGA ================= -->
     <div id="modal-custom-dress" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
@@ -587,20 +565,20 @@
 
     <!-- MODAL PEMBAYARAN -->
     <div id="modal-payment" class="hide fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
-        <div class="bg-white w-full max-w-xl animate-modal-pop shadow-2xl relative">
+        <div class="bg-white w-full max-w-xl max-h-[90vh] overflow-y-auto animate-modal-pop shadow-2xl relative">
             <div class="px-8 py-5 border-b flex justify-between"><h3 class="text-xl font-serif font-bold text-primary">Pembayaran & Diskon</h3><button onclick="closeModal('modal-payment')" class="text-gray-400">X</button></div>
             <form onsubmit="submitPayment(event)" class="p-8">
-                <input id="payment-order-id" type="hidden">
-                <div id="payment-order-summary" class="bg-gray-50 border p-4 mb-5 text-sm"></div>
+                <input id="payment-order-id" type="hidden"><div id="payment-order-summary" class="bg-gray-50 border p-4 mb-5 text-sm"></div>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Diskon</label><select id="payment-discount-type" class="w-full border p-2"><option value="none">Tanpa Diskon</option><option value="percent">Persentase</option><option value="nominal">Nominal</option></select></div>
                     <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Nilai Diskon</label><input id="payment-discount-value" type="number" min="0" value="0" class="w-full border p-2"></div>
                     <div class="col-span-2"><label class="block text-xs font-bold uppercase tracking-wider mb-1">Alasan Diskon</label><input id="payment-discount-reason" class="w-full border p-2" placeholder="Contoh: Repeat customer / Event"></div>
                     <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Nominal Bayar *</label><input id="payment-amount" type="number" min="0" class="w-full border p-2" required></div>
                     <div><label class="block text-xs font-bold uppercase tracking-wider mb-1">Metode</label><select id="payment-method" class="w-full border p-2"><option>Transfer</option><option>QRIS</option><option>Cash</option><option>EDC</option></select></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold uppercase tracking-wider mb-1">Bukti Pembayaran</label><input id="payment-proof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="w-full border p-2 text-xs"><p class="text-[9px] text-gray-400 mt-1">Opsional. File akan disimpan ke Google Drive / Payment Proofs dan URL dicatat pada sheet Payments.</p><p id="payment-upload-status" class="text-[10px] text-primary font-bold mt-1"></p></div>
                     <div class="col-span-2"><label class="block text-xs font-bold uppercase tracking-wider mb-1">Catatan</label><input id="payment-notes" class="w-full border p-2"></div>
                 </div>
-                <button class="w-full bg-primary text-white p-3 mt-6 font-bold uppercase tracking-widest text-xs">Simpan Pembayaran</button>
+                <button id="payment-submit-btn" class="w-full bg-primary text-white p-3 mt-6 font-bold uppercase tracking-widest text-xs">Simpan Pembayaran</button>
             </form>
         </div>
     </div>
@@ -619,6 +597,14 @@
         </div>
     </div>
 
+    <!-- MODAL RIWAYAT PELANGGAN BERDASARKAN WHATSAPP -->
+    <div id="modal-customer-history" class="hide fixed inset-0 z-[75] flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white w-full max-w-3xl max-h-[88vh] overflow-y-auto animate-modal-pop shadow-2xl relative">
+            <div class="sticky top-0 bg-white/95 backdrop-blur-sm px-8 py-5 border-b flex justify-between items-center z-10"><h3 id="customer-history-title" class="text-xl font-serif font-bold text-primary">Riwayat Pelanggan</h3><button onclick="closeModal('modal-customer-history')" class="text-gray-400">X</button></div>
+            <div id="customer-history-content" class="p-8"></div>
+        </div>
+    </div>
+
     <!-- MODAL SUKSES -->
     <div id="modal-success" class="hide fixed inset-0 z-[60] flex items-center justify-center p-4 modal-bg">
         <div class="bg-white w-full max-w-sm text-center p-8 animate-modal-pop border-t-4 border-gold shadow-2xl">
@@ -630,262 +616,424 @@
 
 
     <script>
-        // ================================================================
-        // INDCOLLECTION - FUNCTIONAL ENGINE V3
-        // Tampilan publik tetap mengikuti desain awal; blok ini mengembangkan
-        // database, booking, promo, pembayaran, invoice, WA, dan admin CRUD.
-        // ================================================================
+// ================================================================
+// INDCOLLECTION - FUNCTIONAL ENGINE V4
+// Tampilan publik tetap mengikuti desain awal. V4 hanya menambah mesin:
+// Sheet DB, Drive upload, booking, promo, pembayaran, history, calendar,
+// reminder, denda keterlambatan, PDF + QR, dan admin CRUD.
+// ================================================================
 
-        // GANTI dengan URL Web App Apps Script setelah Code.gs di-deploy.
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx3klAavDiHs7mbbdI65-s2T18_eyNUCQZFgD62htKeBWa9tYD7S8o1_bBt_ikuJHRF/exec';
-        const STORE_WA = '6281220007780';
-        const API_READY = () => API_URL && !API_URL.includes('PASTE_GOOGLE');
-        const LS_KEY = 'indcollection_v3_cache';
-        const TOKEN_KEY = 'indcollection_admin_token';
+// GANTI dengan URL Web App Apps Script setelah IndCollection_Code_V4.gs di-deploy.
+const API_URL = 'PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+const STORE_WA = '6281220007780';
+const API_READY = () => API_URL && !API_URL.includes('PASTE_GOOGLE');
+const LS_KEY = 'indcollection_v4_public_cache';
+const LS_LOCAL_ORDERS = 'indcollection_v4_local_orders';
+const TOKEN_KEY = 'indcollection_admin_token';
 
-        const DEFAULT_PRODUCTS = [
-            { id:'KB001', name:'Kebaya Wisuda Modern Ruby', category:'wisuda', price:175000, comparePrice:0, deposit:100000, cleaningFee:0, available:true, images:[
-                'https://images.unsplash.com/photo-1610484518382-748a80d563be?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
-                'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'
-            ]},
-            { id:'KB002', name:'Royal White Wedding Dress', category:'pengantin', price:850000, comparePrice:0, deposit:250000, cleaningFee:50000, available:true, images:[
-                'https://images.unsplash.com/photo-1588667635956-613b5e43a9a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'
-            ]}
-        ];
+const DEFAULT_PRODUCTS = [
+    { id:'KB001', name:'Kebaya Wisuda Modern Ruby', category:'wisuda', price:175000, comparePrice:0, deposit:100000, cleaningFee:0, available:true, inventoryCode:'INV-RUBY-01', size:'M/L', color:'Ruby', location:'Rak A1', condition:'Baik', lateFeePerDay:50000, description:'', images:[
+        'https://images.unsplash.com/photo-1610484518382-748a80d563be?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'
+    ], imageFileIds:['','','']},
+    { id:'KB002', name:'Royal White Wedding Dress', category:'pengantin', price:850000, comparePrice:0, deposit:250000, cleaningFee:50000, available:true, inventoryCode:'INV-WHITE-01', size:'M', color:'White', location:'Rak B1', condition:'Baik', lateFeePerDay:100000, description:'', images:[
+        'https://images.unsplash.com/photo-1588667635956-613b5e43a9a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'
+    ], imageFileIds:['','','']}
+];
 
-        let catalogData = [];
-        let orderData = [];
-        let customOrderData = [];
-        let promoData = [];
-        let currentSlideIndex = {};
-        let estimasiSaatIni = 280000;
-        let waPreviewPhone = STORE_WA;
-        let activeCatalogFilter = 'semua';
+let catalogData = [];
+let orderData = [];
+let customOrderData = [];
+let promoData = [];
+let paymentData = [];
+let reminderData = [];
+let currentSlideIndex = {};
+let estimasiSaatIni = 280000;
+let waPreviewPhone = STORE_WA;
+let waPreviewReminderId = '';
+let activeCatalogFilter = 'semua';
+let calendarCursor = new Date();
+calendarCursor.setDate(1);
 
-        const HARGA_BASIC = 280000, HARGA_KAIN = 200000, HARGA_PAYET_RINGAN = 150000, HARGA_PAYET_FULL = 450000, HARGA_FURING = 100000;
+const HARGA_BASIC = 280000, HARGA_KAIN = 200000, HARGA_PAYET_RINGAN = 150000, HARGA_PAYET_FULL = 450000, HARGA_FURING = 100000;
 
-        // ---------- UTIL ----------
-        function updateClock() {
-            const now = new Date();
-            const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-            const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-            const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')} WIB`;
-            const el = document.getElementById('realtime-clock');
-            if(el) el.innerHTML = `<span class="hidden sm:inline">${dateStr} | </span><span class="text-gold font-bold">${timeStr}</span>`;
+// ---------- UTIL ----------
+function updateClock() {
+    const now = new Date();
+    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')} WIB`;
+    const el = document.getElementById('realtime-clock');
+    if(el) el.innerHTML = `<span class="hidden sm:inline">${dateStr} | </span><span class="text-gold font-bold">${timeStr}</span>`;
+}
+setInterval(updateClock,1000);
+
+function formatRupiah(angka) { return 'Rp ' + Number(angka || 0).toLocaleString('id-ID'); }
+function escapeHtml(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function normalizeWA(v='') { let x=String(v).replace(/\D/g,''); if(x.startsWith('0')) x='62'+x.slice(1); if(x && !x.startsWith('62')) x='62'+x; return x; }
+function parseDateLocal(s){ if(!s) return null; const p=String(s).slice(0,10).split('-').map(Number); if(p.length!==3)return null; return new Date(p[0],p[1]-1,p[2]); }
+function localISODate(d=new Date()){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function dateID(s) { const d=parseDateLocal(s); return d ? d.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : '-'; }
+function dateShortID(s){ const d=parseDateLocal(s); return d ? d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'}) : '-'; }
+function addDaysISO(s,days){ const d=parseDateLocal(s); if(!d)return''; d.setDate(d.getDate()+days); return localISODate(d); }
+function nowISODate(){ return localISODate(new Date()); }
+function makeLocalId(prefix){ const d=new Date(); return `${prefix}-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(Date.now()).slice(-6)}`; }
+function getToken(){ return sessionStorage.getItem(TOKEN_KEY)||''; }
+function savePublicCache(){ localStorage.setItem(LS_KEY, JSON.stringify({products:catalogData,promos:promoData})); }
+function loadPublicCache(){ try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(e){ return {}; } }
+function saveLocalOrders(){ if(!API_READY()) localStorage.setItem(LS_LOCAL_ORDERS,JSON.stringify(orderData)); }
+function loadLocalOrders(){ try{return JSON.parse(localStorage.getItem(LS_LOCAL_ORDERS)||'[]');}catch(e){return[];} }
+
+async function api(action, data={}, protectedAction=false){
+    if(!API_READY()) throw new Error('API_NOT_CONFIGURED');
+    const payload = {action, data, token: protectedAction ? getToken() : ''};
+    const body = new URLSearchParams({payload:JSON.stringify(payload)});
+    const res = await fetch(API_URL,{method:'POST',body,redirect:'follow'});
+    if(!res.ok) throw new Error('HTTP_'+res.status);
+    const out = await res.json();
+    if(!out.ok) throw new Error(out.error || 'API_ERROR');
+    return out;
+}
+
+async function bootstrap(){
+    const cache = loadPublicCache();
+    catalogData = cache.products?.length ? cache.products : [...DEFAULT_PRODUCTS];
+    promoData = cache.promos || [];
+    orderData = loadLocalOrders();
+    if(API_READY()){
+        try{
+            const out = await api('bootstrap');
+            catalogData = out.products || catalogData;
+            promoData = out.promos || [];
+            savePublicCache();
+        }catch(err){ console.warn('Bootstrap API gagal, cache lokal dipakai:',err.message); }
+    }
+    renderCatalog(activeCatalogFilter);
+    updateClock();
+}
+
+function closeMobileMenu(){ document.getElementById('mobile-menu')?.classList.add('hide'); }
+function navigate(viewId){
+    document.querySelectorAll('.view-section').forEach(el=>el.classList.add('hide'));
+    document.getElementById(`view-${viewId}`)?.classList.remove('hide');
+    window.scrollTo({top:0,behavior:'smooth'});
+    if(viewId==='catalog') renderCatalog(activeCatalogFilter);
+}
+function openModal(id){ document.getElementById(id)?.classList.remove('hide'); document.body.style.overflow='hidden'; }
+function closeModal(id){ document.getElementById(id)?.classList.add('hide'); document.body.style.overflow='auto'; }
+function showSuccessAlert(title,desc,btns){ document.getElementById('success-title').innerText=title; document.getElementById('success-desc').innerHTML=desc; document.getElementById('success-actions').innerHTML=btns; openModal('modal-success'); }
+
+// ---------- PRICING / PROMO ----------
+function isPromoActive(p, product, voucher=''){
+    if(!p || String(p.active).toLowerCase()==='false') return false;
+    const today=nowISODate(); if(p.startDate && today<p.startDate) return false; if(p.endDate && today>p.endDate) return false;
+    const code=(p.code||'').trim().toUpperCase();
+    if(code && code !== String(voucher||'').trim().toUpperCase()) return false;
+    if(p.scope==='category' && String(p.target||'').toLowerCase()!==String(product.category||'').toLowerCase()) return false;
+    if(p.scope==='product' && String(p.target||'')!==String(product.id||'')) return false;
+    return true;
+}
+function priceQuote(product,voucher=''){
+    const base=Number(product.price||0), cleaning=Number(product.cleaningFee||0), deposit=Number(product.deposit||0);
+    let promo=null, discount=0;
+    promoData.filter(p=>isPromoActive(p,product,voucher) && base>=Number(p.minTransaction||0)).forEach(p=>{
+        const disc=p.type==='percent' ? Math.round(base*Number(p.value||0)/100) : Number(p.value||0);
+        if(disc>discount){discount=Math.min(base,disc);promo=p;}
+    });
+    return {base,cleaning,deposit,promo,discount,subtotal:base+cleaning+deposit,total:Math.max(0,base+cleaning+deposit-discount)};
+}
+function catalogPriceHtml(item){
+    const q=priceQuote(item,''), compare=Number(item.comparePrice||0);
+    if(q.promo){
+        const normal=compare>q.base?compare:q.base;
+        return `<span class="text-gray-400 line-through text-xs mr-2">${formatRupiah(normal)}</span><span class="text-primary font-semibold text-sm">${formatRupiah(q.base-q.discount)}</span><div class="text-[9px] uppercase tracking-widest text-gold font-bold mt-1">${escapeHtml(q.promo.name)}</div>`;
+    }
+    if(compare>q.base) return `<span class="text-gray-400 line-through text-xs mr-2">${formatRupiah(compare)}</span><span class="text-primary font-semibold text-sm">${formatRupiah(q.base)}</span>`;
+    return `<span class="text-primary font-semibold text-sm">${formatRupiah(q.base)}</span>`;
+}
+
+// ---------- BESPOKE ----------
+function openCustomDressModal(){ calculateEstimasi(); openModal('modal-custom-dress'); }
+function togglePayet(jenis){ if(jenis==='ringan'&&document.getElementById('opt-payet-ringan').checked) document.getElementById('opt-payet-full').checked=false; if(jenis==='full'&&document.getElementById('opt-payet-full').checked) document.getElementById('opt-payet-ringan').checked=false; }
+function calculateEstimasi(){
+    let total=HARGA_BASIC;
+    const k=document.getElementById('opt-kain').checked, r=document.getElementById('opt-payet-ringan').checked, f=document.getElementById('opt-payet-full').checked, i=document.getElementById('opt-furing').checked;
+    if(k)total+=HARGA_KAIN;if(r)total+=HARGA_PAYET_RINGAN;if(f)total+=HARGA_PAYET_FULL;if(i)total+=HARGA_FURING;
+    document.getElementById('calc-kain').classList.toggle('hide',!k);document.getElementById('calc-payet-ringan').classList.toggle('hide',!r);document.getElementById('calc-payet-full').classList.toggle('hide',!f);document.getElementById('calc-furing').classList.toggle('hide',!i);
+    estimasiSaatIni=total; document.getElementById('total-estimasi').innerText=formatRupiah(total);
+}
+async function submitCustomOrder(e){
+    e.preventDefault();
+    const obj={
+        id:makeLocalId('BSP'), createdAt:new Date().toISOString(), name:document.getElementById('cd-name').value.trim(), wa:normalizeWA(document.getElementById('cd-wa').value),
+        chest:Number(document.getElementById('cd-dada').value), waist:Number(document.getElementById('cd-pinggang').value), hip:Number(document.getElementById('cd-pinggul').value), shoulder:Number(document.getElementById('cd-bahu').value), length:Number(document.getElementById('cd-panjangbaju').value),
+        premiumFabric:document.getElementById('opt-kain').checked, lightBeads:document.getElementById('opt-payet-ringan').checked, fullBeads:document.getElementById('opt-payet-full').checked, lining:document.getElementById('opt-furing').checked,
+        notes:document.getElementById('cd-notes').value.trim(), estimate:estimasiSaatIni, status:'Lead'
+    };
+    try{
+        let saved=obj;
+        if(API_READY()){ const out=await api('createBespoke',obj); saved=out.bespoke; }
+        customOrderData.push(saved);
+        closeModal('modal-custom-dress');
+        showWAPreview(STORE_WA,buildBespokeWA(saved));
+        document.getElementById('custom-dress-form').reset(); calculateEstimasi();
+    }catch(err){ alert('Gagal mengirim permintaan bespoke: '+err.message); }
+}
+function buildBespokeWA(o){
+    const opts=[o.premiumFabric?'Kain premium':'',o.lightBeads?'Payet ringan':'',o.fullBeads?'Full payet/bordir':'',o.lining?'Furing dalam':''].filter(Boolean).join(', ')||'Basic';
+    return `Halo Tim IndCollection,\n\nSaya ingin konsultasi Bespoke.\nID: *${o.id}*\nNama: ${o.name}\nWhatsApp: +${o.wa}\nUkuran: Dada ${o.chest} cm | Pinggang ${o.waist} cm | Pinggul ${o.hip} cm | Bahu ${o.shoulder} cm | Panjang ${o.length} cm\nDetail: ${opts}\nCatatan: ${o.notes||'-'}\nEstimasi awal: *${formatRupiah(o.estimate)}*\n\nMohon panduan untuk konsultasi dan penawaran final. Terima kasih.`;
+}
+
+// ---------- CATALOG + BOOKING ----------
+function filterCatalog(category,clickedBtn=null){
+    activeCatalogFilter=category;
+    document.querySelectorAll('.filter-btn').forEach(btn=>{btn.classList.remove('bg-dark','text-gold','active');btn.classList.add('bg-transparent','text-dark');});
+    if(clickedBtn){clickedBtn.classList.remove('bg-transparent','text-dark');clickedBtn.classList.add('bg-dark','text-gold','active');}
+    renderCatalog(category);
+}
+function slideImage(itemId,direction){
+    const item=catalogData.find(i=>i.id===itemId); if(!item||!item.images?.length||item.images.length<=1)return;
+    const max=item.images.length; currentSlideIndex[itemId]=(Number(currentSlideIndex[itemId]||0)+direction+max)%max;
+    const img=document.getElementById(`img-${itemId}`);if(img)img.src=item.images[currentSlideIndex[itemId]];
+    const dots=document.getElementById(`dots-${itemId}`);if(dots)Array.from(dots.children).forEach((dot,idx)=>dot.className=idx===currentSlideIndex[itemId]?'w-2 h-2 rounded-full bg-gold':'w-2 h-2 rounded-full bg-white/50');
+}
+function renderCatalog(categoryFilter='semua'){
+    const grid=document.getElementById('catalog-grid');if(!grid)return;grid.innerHTML='';
+    const filtered=categoryFilter==='semua'?catalogData:catalogData.filter(i=>i.category===categoryFilter);
+    filtered.forEach(item=>{
+        currentSlideIndex[item.id]=0; const active=String(item.available)!=='false'&&item.available!==false; const multi=(item.images||[]).length>1;
+        const controls=multi?`<button onclick="slideImage('${item.id}',-1);event.stopPropagation();" class="absolute left-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10094;</button><button onclick="slideImage('${item.id}',1);event.stopPropagation();" class="absolute right-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10095;</button>`:'';
+        const dots=multi?`<div id="dots-${item.id}" class="absolute bottom-3 left-0 w-full flex justify-center gap-1 z-10">${item.images.map((_,idx)=>`<div class="${idx===0?'w-2 h-2 rounded-full bg-gold':'w-2 h-2 rounded-full bg-white/50'}"></div>`).join('')}</div>`:'';
+        const detail=[item.size?`Size ${escapeHtml(item.size)}`:'',item.color?escapeHtml(item.color):''].filter(Boolean).join(' · ');
+        grid.innerHTML+=`<div class="group ${active?'cursor-pointer':'cursor-default'}" onclick="${active?`openBookingModal('${item.id}')`:''}"><div class="relative overflow-hidden bg-gray-100 aspect-[3/4] mb-4"><span class="${active?'bg-dark/80 text-gold':'bg-primary/90 text-white'} text-[10px] uppercase tracking-widest px-3 py-1 absolute top-4 right-4 border border-gold/30 z-20">${active?'Tersedia':'Nonaktif'}</span><div class="w-full h-full relative"><img id="img-${item.id}" src="${escapeHtml(item.images?.[0]||'')}" alt="${escapeHtml(item.name)}" class="w-full h-full object-cover transition duration-700 ${active?'group-hover:scale-105':'grayscale opacity-70'}">${controls}${dots}</div></div><div class="text-center px-2"><h3 class="font-serif font-bold text-lg text-dark mb-1 truncate" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</h3>${detail?`<p class="text-[10px] text-gray-400 uppercase tracking-wider mb-1">${detail}</p>`:''}<div>${catalogPriceHtml(item)}</div>${active?`<span class="mt-3 inline-block text-xs uppercase tracking-widest font-bold border-b border-dark pb-1 group-hover:text-gold group-hover:border-gold transition">Pesan Sekarang</span>`:`<span class="mt-3 block text-xs text-gray-400">Tidak Tersedia</span>`}</div></div>`;
+    });
+}
+function openBookingModal(itemId){
+    const item=catalogData.find(i=>i.id===itemId);if(!item)return;
+    document.getElementById('form-item-id').value=itemId;
+    document.getElementById('booking-item-details').innerHTML=`<div class="flex items-center gap-4 border border-gray-100 p-2 bg-gray-50"><img src="${escapeHtml(item.images?.[0]||'')}" class="w-16 h-16 object-cover rounded-sm"><div><h4 class="font-bold text-sm text-dark">${escapeHtml(item.name)}</h4><p class="text-[10px] text-gray-500">${item.size?`Size ${escapeHtml(item.size)}`:''}${item.color?` · ${escapeHtml(item.color)}`:''}</p><div class="text-primary text-xs font-bold">${catalogPriceHtml(item)}</div></div></div>`;
+    document.getElementById('form-date-start').min=nowISODate();document.getElementById('form-date-end').min=nowISODate();document.getElementById('form-voucher').value='';document.getElementById('booking-error').classList.add('hide');
+    updateBookingQuote();openModal('modal-booking');
+}
+function updateBookingQuote(){
+    const item=catalogData.find(i=>i.id===document.getElementById('form-item-id').value);if(!item)return;
+    const start=document.getElementById('form-date-start').value,end=document.getElementById('form-date-end').value,voucher=document.getElementById('form-voucher').value;
+    const q=priceQuote(item,voucher); const err=document.getElementById('booking-error'),btn=document.getElementById('booking-submit-btn');
+    let dateError=''; if(start&&end&&end<start)dateError='Tanggal kembali tidak boleh sebelum tanggal sewa.';
+    err.innerText=dateError;err.classList.toggle('hide',!dateError);btn.disabled=!!dateError;btn.classList.toggle('opacity-50',!!dateError);
+    document.getElementById('booking-price-summary').innerHTML=`<div class="flex justify-between"><span>Harga Sewa</span><b>${formatRupiah(q.base)}</b></div>${q.cleaning?`<div class="flex justify-between"><span>Cleaning Fee</span><span>${formatRupiah(q.cleaning)}</span></div>`:''}${q.deposit?`<div class="flex justify-between"><span>Deposit</span><span>${formatRupiah(q.deposit)}</span></div>`:''}${q.discount?`<div class="flex justify-between text-green-700"><span>${escapeHtml(q.promo?.name||'Promo')}</span><span>- ${formatRupiah(q.discount)}</span></div>`:''}<div class="flex justify-between border-t mt-2 pt-2 text-primary"><b>Total Booking</b><b>${formatRupiah(q.total)}</b></div><p class="text-[9px] text-gray-400 mt-2">Ketersediaan tanggal dikonfirmasi kembali oleh sistem saat tombol Sewa ditekan.</p>`;
+}
+async function submitBooking(e){
+    e.preventDefault();
+    const productId=document.getElementById('form-item-id').value,item=catalogData.find(i=>i.id===productId);if(!item)return;
+    const start=document.getElementById('form-date-start').value,end=document.getElementById('form-date-end').value;
+    if(!start||!end||end<start)return;
+    const q=priceQuote(item,document.getElementById('form-voucher').value);
+    let order={id:makeLocalId('INV'),createdAt:new Date().toISOString(),productId,itemName:item.name,name:document.getElementById('form-name').value.trim(),wa:normalizeWA(document.getElementById('form-wa').value),startDate:start,endDate:end,voucher:document.getElementById('form-voucher').value.trim().toUpperCase(),basePrice:q.base,cleaningFee:q.cleaning,deposit:q.deposit,promoName:q.promo?.name||'',promoDiscount:q.discount,manualDiscount:0,finalTotal:q.total,paid:0,balance:q.total,paymentStatus:'UNPAID',status:'Pending',lateFeePerDay:Number(item.lateFeePerDay||0),lateDays:0,lateFee:0,inventoryCode:item.inventoryCode||''};
+    try{
+        if(API_READY()){const out=await api('createOrder',order);order=out.order;}
+        else{const conflict=orderData.some(o=>o.productId===productId&&o.status!=='Cancelled'&&start<=o.endDate&&end>=o.startDate);if(conflict)throw new Error('BOOKING_CONFLICT');orderData.push(order);saveLocalOrders();}
+        closeModal('modal-booking');
+        showWAPreview(STORE_WA,buildBookingWA(order));
+        e.target.reset();
+    }catch(err){
+        const msg=err.message==='BOOKING_CONFLICT'?'Tanggal tersebut sudah terisi untuk baju ini. Silakan pilih tanggal lain.':err.message;
+        const el=document.getElementById('booking-error');el.innerText=msg;el.classList.remove('hide');
+    }
+}
+function buildBookingWA(o){
+    return `Halo Tim IndCollection,\n\nSaya ingin mengonfirmasi booking berikut:\n\n*INDCOLLECTION - BOOKING SEWA*\nNo. Booking: *${o.id}*\nNama: ${o.name}\nProduk: ${o.itemName}${o.inventoryCode?` (${o.inventoryCode})`:''}\nTanggal Sewa: ${dateID(o.startDate)}\nTanggal Kembali: ${dateID(o.endDate)}\n\nHarga Sewa: ${formatRupiah(o.basePrice)}${o.cleaningFee?`\nCleaning Fee: ${formatRupiah(o.cleaningFee)}`:''}${o.deposit?`\nDeposit: ${formatRupiah(o.deposit)}`:''}${o.promoDiscount?`\nPromo ${o.promoName||''}: -${formatRupiah(o.promoDiscount)}`:''}\n*Total: ${formatRupiah(o.finalTotal)}*\nStatus Pembayaran: ${o.paymentStatus}\n\nMohon konfirmasi booking dan informasi pembayaran/DP. Terima kasih.`;
+}
+
+// ---------- WHATSAPP PREVIEW ----------
+function showWAPreview(phone,text,reminderId=''){waPreviewPhone=normalizeWA(phone||STORE_WA);waPreviewReminderId=reminderId||'';document.getElementById('wa-preview-text').value=text;openModal('modal-wa-preview');}
+async function copyWAText(){const el=document.getElementById('wa-preview-text');try{await navigator.clipboard.writeText(el.value);alert('Teks WhatsApp disalin.');}catch(e){el.select();document.execCommand('copy');alert('Teks WhatsApp disalin.');}}
+function openWAFromPreview(){
+    const text=document.getElementById('wa-preview-text').value,url=`https://wa.me/${waPreviewPhone}?text=${encodeURIComponent(text)}`;
+    window.open(url,'_blank','noopener');
+    if(waPreviewReminderId&&API_READY()){
+        const id=waPreviewReminderId;waPreviewReminderId='';
+        api('markReminderSent',{id},true).then(out=>{const idx=reminderData.findIndex(r=>r.id===id);if(idx>=0)reminderData[idx]=out.reminder;renderReminders();}).catch(console.warn);
+    }
+    closeModal('modal-wa-preview');
+}
+
+// ---------- ADMIN AUTH ----------
+function openAdminLoginModal(){document.getElementById('admin-password').value='';document.getElementById('login-error').classList.add('hide');openModal('modal-admin-login');}
+async function handleLogin(e){
+    e.preventDefault();const error=document.getElementById('login-error');error.classList.add('hide');
+    if(!API_READY()){error.innerText='Hubungkan API_URL Apps Script terlebih dahulu untuk login admin.';error.classList.remove('hide');return;}
+    try{const out=await api('login',{password:document.getElementById('admin-password').value});sessionStorage.setItem(TOKEN_KEY,out.token);closeModal('modal-admin-login');navigate('admin-dashboard');await refreshAdminData();switchAdminTab('sewa');}
+    catch(err){error.innerText=err.message==='INVALID_PASSWORD'?'Password salah.':'Login gagal: '+err.message;error.classList.remove('hide');}
+}
+function logoutAdmin(){sessionStorage.removeItem(TOKEN_KEY);orderData=[];customOrderData=[];paymentData=[];reminderData=[];navigate('home');}
+async function refreshAdminData(){
+    if(!getToken())return;
+    try{
+        const out=await api('adminData',{},true);
+        catalogData=out.products||[];orderData=out.orders||[];customOrderData=out.bespoke||[];promoData=out.promos||[];paymentData=out.payments||[];reminderData=out.reminders||[];
+        savePublicCache();renderAdminAll();renderCatalog(activeCatalogFilter);
+    }catch(err){if(['AUTH_EXPIRED','AUTH_INVALID','AUTH_REQUIRED'].includes(err.message)){logoutAdmin();alert('Sesi admin berakhir. Silakan login kembali.');}else console.error(err);}
+}
+function renderAdminAll(){renderAdminOrders();renderAdminCustom();renderAdminKatalog();renderAdminPromo();renderCalendar();renderReminders();}
+function switchAdminTab(tab){
+    ['sewa','custom','katalog','promo','calendar','reminder'].forEach(t=>{const btn=document.getElementById(`tab-${t}`),cont=document.getElementById(`admin-${t}-container`);if(!btn||!cont)return;if(t===tab){btn.className='px-6 py-3 bg-primary text-white font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md whitespace-nowrap';cont.classList.remove('hide');}else{btn.className='px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap';cont.classList.add('hide');}});
+    if(tab==='calendar')renderCalendar();if(tab==='reminder')renderReminders();
+}
+
+// ---------- ADMIN ORDERS / PAYMENT ----------
+function renderAdminOrders(){
+    const tb=document.getElementById('admin-orders-table');if(!tb)return;
+    if(!orderData.length){tb.innerHTML='<tr><td class="p-8 text-center text-gray-400">Belum ada penyewaan.</td></tr>';return;}
+    tb.innerHTML='<tr class="bg-gray-50 text-[10px] uppercase tracking-wider text-gray-500"><th class="p-3 text-left">Invoice</th><th class="p-3 text-left">Pelanggan</th><th class="p-3 text-left">Produk / Tanggal</th><th class="p-3 text-left">Total</th><th class="p-3 text-left">Pembayaran</th><th class="p-3 text-left">Status</th><th class="p-3 text-left">Aksi</th></tr>'+[...orderData].reverse().map(o=>{
+        const late=o.lateFee>0?`<div class="text-[9px] text-primary mt-1">Terlambat ${o.lateDays} hari · ${formatRupiah(o.lateFee)}</div>`:'';
+        return `<tr class="border-b hover:bg-gray-50"><td class="p-3"><b class="text-xs">${escapeHtml(o.id)}</b><div class="text-[9px] text-gray-400">${(o.createdAt||'').slice(0,10)}</div></td><td class="p-3"><div class="text-xs font-bold">${escapeHtml(o.name)}</div><div class="text-[10px] text-gray-500">+${escapeHtml(o.wa)}</div></td><td class="p-3"><div class="text-xs">${escapeHtml(o.itemName)}</div><div class="text-[9px] text-gray-400">${escapeHtml(o.inventoryCode||'')}</div><div class="text-[10px] text-gray-500">${dateID(o.startDate)} – ${dateID(o.endDate)}</div>${late}</td><td class="p-3 text-xs font-bold">${formatRupiah(o.finalTotal)}</td><td class="p-3"><div class="text-[10px] font-bold ${o.paymentStatus==='PAID'?'text-green-700':'text-primary'}">${escapeHtml(o.paymentStatus)}</div><div class="text-[10px]">Bayar ${formatRupiah(o.paid)}<br>Sisa ${formatRupiah(o.balance)}</div></td><td class="p-3"><select onchange="updateOrderStatus('${o.id}',this.value)" class="border text-[10px] p-1"><option ${o.status==='Pending'?'selected':''}>Pending</option><option ${o.status==='Confirmed'?'selected':''}>Confirmed</option><option ${o.status==='In Use'?'selected':''}>In Use</option><option ${o.status==='Returned'?'selected':''}>Returned</option><option ${o.status==='Cancelled'?'selected':''}>Cancelled</option></select></td><td class="p-3"><div class="flex flex-col gap-1 w-max"><button onclick="openPaymentModal('${o.id}')" class="bg-primary text-white px-2 py-1 text-[9px] uppercase font-bold">Bayar / Diskon</button><button onclick="generateInvoice('${o.id}')" class="bg-dark text-gold px-2 py-1 text-[9px] uppercase font-bold">Nota PDF + QR</button><button onclick="adminOrderWA('${o.id}')" class="border border-green-600 text-green-700 px-2 py-1 text-[9px] uppercase font-bold">WhatsApp</button><button onclick="openCustomerHistory('${o.wa}')" class="border border-gray-400 text-gray-600 px-2 py-1 text-[9px] uppercase font-bold">Riwayat WA</button></div></td></tr>`;
+    }).join('');
+}
+async function updateOrderStatus(id,status){try{const out=await api('updateOrder',{id,status},true);const idx=orderData.findIndex(x=>x.id===id);if(idx>=0)orderData[idx]=out.order;renderAdminAll();}catch(err){alert('Gagal: '+err.message);await refreshAdminData();}}
+function openPaymentModal(id){
+    const o=orderData.find(x=>x.id===id);if(!o)return;
+    document.getElementById('payment-order-id').value=id;document.getElementById('payment-discount-type').value='none';document.getElementById('payment-discount-value').value=0;document.getElementById('payment-discount-reason').value='';document.getElementById('payment-amount').value='';document.getElementById('payment-notes').value='';document.getElementById('payment-proof').value='';document.getElementById('payment-upload-status').innerText='';
+    document.getElementById('payment-order-summary').innerHTML=`<b>${escapeHtml(o.id)} — ${escapeHtml(o.name)}</b><div class="mt-2 flex justify-between"><span>Total saat ini</span><b>${formatRupiah(o.finalTotal)}</b></div>${o.lateFee?`<div class="flex justify-between text-primary"><span>Denda (${o.lateDays} hari)</span><b>${formatRupiah(o.lateFee)}</b></div>`:''}<div class="flex justify-between"><span>Sudah dibayar</span><b>${formatRupiah(o.paid)}</b></div><div class="flex justify-between text-primary"><span>Sisa</span><b>${formatRupiah(o.balance)}</b></div>`;openModal('modal-payment');
+}
+async function submitPayment(e){
+    e.preventDefault(); const id=document.getElementById('payment-order-id').value,status=document.getElementById('payment-upload-status'),btn=document.getElementById('payment-submit-btn');btn.disabled=true;btn.classList.add('opacity-50');
+    try{
+        let proofUrl='',proofFileId=''; const file=document.getElementById('payment-proof').files[0];
+        if(file){status.innerText='Mengunggah bukti pembayaran ke Google Drive...';const up=await uploadAdminFile(file,'payment','Bukti-'+id);proofUrl=up.url;proofFileId=up.fileId;}
+        const payload={id,discountType:document.getElementById('payment-discount-type').value,discountValue:Number(document.getElementById('payment-discount-value').value||0),discountReason:document.getElementById('payment-discount-reason').value.trim(),amount:Number(document.getElementById('payment-amount').value||0),method:document.getElementById('payment-method').value,notes:document.getElementById('payment-notes').value.trim(),proofUrl,proofFileId};
+        const out=await api('addPayment',payload,true);const idx=orderData.findIndex(x=>x.id===id);if(idx>=0)orderData[idx]=out.order;if(out.payment?.id)paymentData.push(out.payment);closeModal('modal-payment');renderAdminAll();showWAPreview(out.order.wa,buildPaymentWA(out.order,out.payment));
+    }catch(err){alert('Gagal menyimpan pembayaran: '+err.message);}finally{btn.disabled=false;btn.classList.remove('opacity-50');status.innerText='';}
+}
+function buildPaymentWA(o,p){return `Halo Kak ${o.name}, terima kasih telah memilih *IndCollection*.\n\nNo. Invoice: *${o.id}*\nProduk: ${o.itemName}\n${p&&p.amount?`Pembayaran diterima: *${formatRupiah(p.amount)}* (${p.method})\n`:''}${o.lateFee?`Denda keterlambatan: ${formatRupiah(o.lateFee)} (${o.lateDays} hari)\n`:''}Total: *${formatRupiah(o.finalTotal)}*\nSudah dibayar: ${formatRupiah(o.paid)}\nSisa: *${formatRupiah(o.balance)}*\nStatus: *${o.paymentStatus}*\n\nSimpan nota sebagai bukti transaksi. Terima kasih.\n— IndCollection`;}
+function adminOrderWA(id){const o=orderData.find(x=>x.id===id);if(!o)return;showWAPreview(o.wa,`Halo Kak ${o.name}, berikut ringkasan booking IndCollection.\n\nNo. Invoice: *${o.id}*\nProduk: ${o.itemName}\nSewa: ${dateID(o.startDate)} – ${dateID(o.endDate)}\n${o.lateFee?`Denda: ${formatRupiah(o.lateFee)} (${o.lateDays} hari)\n`:''}Total: *${formatRupiah(o.finalTotal)}*\nSudah Dibayar: ${formatRupiah(o.paid)}\nSisa: ${formatRupiah(o.balance)}\nStatus Booking: ${o.status}\nStatus Pembayaran: ${o.paymentStatus}\n\nTerima kasih.`);}
+
+// ---------- PDF INVOICE + QR ----------
+async function generateInvoice(id){
+    const o=orderData.find(x=>x.id===id);if(!o)return;
+    if(!window.jspdf){alert('Library PDF belum termuat. Silakan refresh halaman.');return;}
+    const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'});let y=22;
+    doc.setFillColor(123,17,19);doc.rect(0,0,210,32,'F');doc.setTextColor(243,229,171);doc.setFont('helvetica','bold');doc.setFontSize(20);doc.text('INDCOLLECTION',18,17);doc.setFontSize(8);doc.text('EXCLUSIVE KEBAYA & BESPOKE DRESS',18,24);
+    doc.setTextColor(26,26,26);doc.setFontSize(16);doc.text('INVOICE',192,17,{align:'right'});doc.setFontSize(9);doc.text(o.id,192,24,{align:'right'});y=44;
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Pelanggan',18,y);doc.text('Detail Sewa',110,y);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(o.name,18,y+6);doc.text('WhatsApp: +'+o.wa,18,y+11);doc.text(o.itemName,110,y+6);doc.text('Kode: '+(o.inventoryCode||o.productId),110,y+11);doc.text(`${dateID(o.startDate)} - ${dateID(o.endDate)}`,110,y+16);y=72;
+    doc.setDrawColor(212,175,55);doc.line(18,y,192,y);y+=8;
+    const rows=[['Harga Sewa',o.basePrice],['Cleaning Fee',o.cleaningFee],['Deposit',o.deposit]];
+    if(o.promoDiscount)rows.push(['Promo '+(o.promoName||''),-o.promoDiscount]);if(o.manualDiscount)rows.push(['Diskon '+(o.manualDiscountReason||'Admin'),-o.manualDiscount]);if(o.lateFee)rows.push([`Denda keterlambatan (${o.lateDays} hari)`,o.lateFee]);
+    doc.setFontSize(9);rows.forEach(r=>{if(!r[1]&&r[0]!=='Harga Sewa')return;doc.text(r[0],22,y);doc.text(formatRupiah(r[1]),188,y,{align:'right'});y+=7;});
+    doc.line(18,y,192,y);y+=9;doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('TOTAL',22,y);doc.text(formatRupiah(o.finalTotal),188,y,{align:'right'});y+=9;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('Sudah Dibayar',22,y);doc.text(formatRupiah(o.paid),188,y,{align:'right'});y+=6;doc.text('Sisa Pembayaran',22,y);doc.text(formatRupiah(o.balance),188,y,{align:'right'});y+=10;
+    doc.setFillColor(o.paymentStatus==='PAID'?220:253,o.paymentStatus==='PAID'?252:242,o.paymentStatus==='PAID'?231:248);doc.roundedRect(18,y,174,14,2,2,'F');doc.setFont('helvetica','bold');doc.text('STATUS: '+o.paymentStatus,22,y+9);y+=25;
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text('Scan QR untuk menghubungi IndCollection dengan referensi invoice ini.',18,y);
+    try{const qr=makeQRDataURL(`https://wa.me/${STORE_WA}?text=${encodeURIComponent('Halo IndCollection, saya ingin konfirmasi invoice '+o.id)}`);if(qr)doc.addImage(qr,'PNG',18,y+5,28,28);}catch(e){console.warn('QR gagal',e);}
+    doc.setFontSize(8);doc.text('IndCollection',55,y+12);doc.text('Jl. Ridwan Rais Gg. Ainan No.9, Bandar Lampung',55,y+18);doc.text('WhatsApp: +62 812-2000-7780',55,y+24);
+    doc.setTextColor(120);doc.text('Nota dibuat otomatis oleh sistem IndCollection.',18,285);doc.save(`IndCollection_${o.id}_${String(o.name).replace(/[^a-z0-9]+/gi,'-')}.pdf`);
+}
+function makeQRDataURL(text){
+    if(typeof QRCode==='undefined')return'';const wrap=document.createElement('div');wrap.style.position='fixed';wrap.style.left='-9999px';document.body.appendChild(wrap);new QRCode(wrap,{text,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});const canvas=wrap.querySelector('canvas');const data=canvas?canvas.toDataURL('image/png'):'';wrap.remove();return data;
+}
+
+// ---------- CUSTOMER HISTORY ----------
+async function openCustomerHistory(wa){
+    const normalized=normalizeWA(wa);openModal('modal-customer-history');document.getElementById('customer-history-title').innerText='Riwayat Pelanggan +'+normalized;document.getElementById('customer-history-content').innerHTML='<div class="p-8 text-center text-gray-400">Memuat riwayat...</div>';
+    try{
+        let history;
+        if(API_READY()) history=await api('customerHistory',{wa:normalized},true);
+        else{const orders=orderData.filter(o=>normalizeWA(o.wa)===normalized),ids=orders.map(o=>o.id);history={wa:normalized,orders,bespoke:customOrderData.filter(o=>normalizeWA(o.wa)===normalized),payments:paymentData.filter(p=>ids.includes(p.orderId)),totalOrders:orders.length,totalSpend:orders.reduce((a,o)=>a+Number(o.paid||0),0)};}
+        renderCustomerHistory(history);
+    }catch(err){document.getElementById('customer-history-content').innerHTML=`<div class="p-6 text-primary">Gagal memuat: ${escapeHtml(err.message)}</div>`;}
+}
+function renderCustomerHistory(h){
+    const orders=h.orders||[],bespoke=h.bespoke||[],payments=h.payments||[];
+    const orderHtml=orders.length?orders.slice().reverse().map(o=>`<div class="border-b py-3"><div class="flex justify-between gap-3"><div><b class="text-xs">${escapeHtml(o.id)}</b><div class="text-[10px] text-gray-500">${escapeHtml(o.itemName)} · ${dateID(o.startDate)} – ${dateID(o.endDate)}</div></div><div class="text-right"><b class="text-xs">${formatRupiah(o.finalTotal)}</b><div class="text-[9px] ${o.paymentStatus==='PAID'?'text-green-700':'text-primary'}">${escapeHtml(o.paymentStatus)}</div></div></div></div>`).join(''):'<p class="text-xs text-gray-400">Belum ada penyewaan.</p>';
+    const bespokeHtml=bespoke.length?bespoke.slice().reverse().map(b=>`<div class="border-b py-2 text-xs"><b>${escapeHtml(b.id)}</b> · ${escapeHtml(b.status)} · ${formatRupiah(b.estimate)}</div>`).join(''):'<p class="text-xs text-gray-400">Belum ada pesanan bespoke.</p>';
+    const payHtml=payments.length?payments.slice().reverse().map(p=>`<div class="border-b py-2 flex justify-between text-xs"><span>${escapeHtml(p.id)} · ${escapeHtml(p.method)}${p.proofUrl?` · <a href="${escapeHtml(p.proofUrl)}" target="_blank" class="text-primary underline">Bukti</a>`:''}</span><b>${formatRupiah(p.amount)}</b></div>`).join(''):'<p class="text-xs text-gray-400">Belum ada pembayaran.</p>';
+    document.getElementById('customer-history-content').innerHTML=`<div class="grid grid-cols-2 gap-3 mb-5"><div class="bg-lightBg border p-4"><div class="text-[10px] uppercase text-gray-500">Jumlah Sewa</div><div class="font-serif text-2xl text-primary">${h.totalOrders||orders.length}</div></div><div class="bg-lightBg border p-4"><div class="text-[10px] uppercase text-gray-500">Total Dibayar</div><div class="font-serif text-xl text-primary">${formatRupiah(h.totalSpend||0)}</div></div></div><h4 class="font-serif font-bold mb-2">Riwayat Penyewaan</h4>${orderHtml}<h4 class="font-serif font-bold mt-5 mb-2">Bespoke</h4>${bespokeHtml}<h4 class="font-serif font-bold mt-5 mb-2">Pembayaran</h4>${payHtml}`;
+}
+
+// ---------- ADMIN CALENDAR ----------
+function calendarPrev(){calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar();}
+function calendarNext(){calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar();}
+function calendarToday(){calendarCursor=new Date();calendarCursor.setDate(1);renderCalendar();}
+function renderCalendar(){
+    const grid=document.getElementById('admin-calendar-grid'),title=document.getElementById('admin-calendar-title');if(!grid||!title)return;
+    title.innerText=calendarCursor.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+    const year=calendarCursor.getFullYear(),month=calendarCursor.getMonth(),first=new Date(year,month,1),start=new Date(year,month,1-first.getDay());
+    const names=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];let html=names.map(n=>`<div class="bg-dark text-gold text-center text-[10px] uppercase tracking-wider p-2 font-bold">${n}</div>`).join('');
+    for(let i=0;i<42;i++){
+        const d=new Date(start);d.setDate(start.getDate()+i);const iso=localISODate(d),inMonth=d.getMonth()===month;
+        const bookings=orderData.filter(o=>o.status!=='Cancelled'&&o.startDate<=iso&&o.endDate>=iso);
+        html+=`<div class="min-h-28 border border-gray-100 p-2 ${inMonth?'bg-white':'bg-gray-50 text-gray-300'}"><div class="text-[10px] font-bold mb-1 ${iso===nowISODate()?'text-primary':''}">${d.getDate()}</div>${bookings.slice(0,3).map(o=>`<div title="${escapeHtml(o.name)} · ${escapeHtml(o.itemName)}" class="mb-1 px-1.5 py-1 text-[8px] leading-tight ${o.status==='In Use'?'bg-primary text-white':'bg-goldLight text-dark'} overflow-hidden">${escapeHtml(o.inventoryCode||o.itemName)}</div>`).join('')}${bookings.length>3?`<div class="text-[8px] text-gray-400">+${bookings.length-3} booking</div>`:''}</div>`;
+    }
+    grid.innerHTML=html;
+}
+
+// ---------- ADMIN REMINDERS ----------
+async function refreshReminders(){try{const out=await api('refreshReminders',{},true);reminderData=out.reminders||[];renderReminders();}catch(err){alert('Gagal memperbarui reminder: '+err.message);}}
+function renderReminders(){
+    const c=document.getElementById('admin-reminder-list');if(!c)return;
+    const sorted=[...reminderData].sort((a,b)=>{if(a.status!==b.status)return a.status==='PENDING'?-1:1;return String(b.generatedAt).localeCompare(String(a.generatedAt));});
+    if(!sorted.length){c.innerHTML='<div class="p-8 text-center text-gray-400">Belum ada reminder untuk hari ini.</div>';return;}
+    c.innerHTML=sorted.map(r=>{const labels={'PICKUP_H-1':'H-1 Pengambilan','RETURN_H+0':'Hari Pengembalian',OVERDUE:'Terlambat'};return `<div class="border-b p-4 flex flex-col md:flex-row md:items-center justify-between gap-3"><div><div class="text-[10px] uppercase tracking-widest font-bold ${r.type==='OVERDUE'?'text-primary':'text-gold'}">${labels[r.type]||escapeHtml(r.type)}</div><div class="font-bold text-sm mt-1">${escapeHtml(r.name)} · ${escapeHtml(r.orderId)}</div><div class="text-[10px] text-gray-500">+${escapeHtml(r.wa)} · ${dateID(r.dueDate)} · ${escapeHtml(r.status)}</div><p class="text-xs text-gray-600 mt-2 max-w-3xl">${escapeHtml(r.message)}</p></div><button onclick="openReminderWA('${r.id}')" class="${r.status==='SENT'?'border border-gray-300 text-gray-500':'bg-green-600 text-white'} px-4 py-2 text-[10px] uppercase font-bold whitespace-nowrap">${r.status==='SENT'?'Kirim Ulang':'Buka WhatsApp'}</button></div>`;}).join('');
+}
+function openReminderWA(id){const r=reminderData.find(x=>x.id===id);if(!r)return;showWAPreview(r.wa,r.message,r.id);}
+
+// ---------- ADMIN BESPOKE ----------
+function renderAdminCustom(){const tb=document.getElementById('admin-custom-table');if(!tb)return;if(!customOrderData.length){tb.innerHTML='<tr><td class="p-8 text-center text-gray-400">Belum ada pesanan bespoke.</td></tr>';return;}tb.innerHTML='<tr class="bg-gray-50 text-[10px] uppercase text-gray-500"><th class="p-3 text-left">ID</th><th class="p-3 text-left">Pelanggan</th><th class="p-3 text-left">Estimasi</th><th class="p-3 text-left">Status</th><th class="p-3 text-left">Aksi</th></tr>'+[...customOrderData].reverse().map(o=>`<tr class="border-b"><td class="p-3 text-xs font-bold">${escapeHtml(o.id)}</td><td class="p-3"><div class="text-xs font-bold">${escapeHtml(o.name)}</div><div class="text-[10px] text-gray-500">+${escapeHtml(o.wa)}</div></td><td class="p-3 text-xs font-bold">${formatRupiah(o.estimate)}</td><td class="p-3"><select onchange="updateBespokeStatus('${o.id}',this.value)" class="border text-[10px] p-1">${['Lead','Quotation','DP','Production','Fitting','Done'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="p-3"><div class="flex flex-col gap-1 w-max"><button onclick="adminBespokeWA('${o.id}')" class="border border-green-600 text-green-700 px-2 py-1 text-[9px] uppercase font-bold">WhatsApp</button><button onclick="openCustomerHistory('${o.wa}')" class="border border-gray-400 text-gray-600 px-2 py-1 text-[9px] uppercase font-bold">Riwayat WA</button></div></td></tr>`).join('');}
+async function updateBespokeStatus(id,status){try{const out=await api('updateBespoke',{id,status},true);const idx=customOrderData.findIndex(x=>x.id===id);if(idx>=0)customOrderData[idx]=out.bespoke;renderAdminCustom();}catch(err){alert('Gagal: '+err.message);}}
+function adminBespokeWA(id){const o=customOrderData.find(x=>x.id===id);if(!o)return;showWAPreview(o.wa,buildBespokeWA(o));}
+
+// ---------- ADMIN CATALOG + DRIVE PHOTO ----------
+function renderAdminKatalog(){
+    const tb=document.getElementById('admin-katalog-table');if(!tb)return;if(!catalogData.length){tb.innerHTML='<tr><td colspan="6" class="p-6 text-center text-gray-400 italic font-serif">Katalog Kosong.</td></tr>';return;}tb.innerHTML='';
+    [...catalogData].reverse().forEach(item=>{tb.innerHTML+=`<tr class="hover:bg-gray-50 transition border-b border-gray-100"><td class="p-4"><div class="w-16 h-20 bg-gray-200 overflow-hidden border border-gray-300"><img src="${escapeHtml(item.images?.[0]||'')}" class="w-full h-full object-cover"></div></td><td class="px-4 py-4"><p class="text-sm font-bold text-dark">${escapeHtml(item.name)}</p><p class="text-[10px] text-gray-400 font-mono mt-1">${escapeHtml(item.inventoryCode||item.id)} · ID ${escapeHtml(item.id)}</p><p class="text-[10px] text-gray-500 mt-1">${item.size?`Size ${escapeHtml(item.size)} · `:''}${escapeHtml(item.color||'-')} · ${escapeHtml(item.location||'Lokasi belum diisi')}</p><p class="text-[10px] text-primary mt-1">${item.images?.length||0} Foto · Denda ${formatRupiah(item.lateFeePerDay||0)}/hari</p></td><td class="px-4 py-4 text-xs uppercase tracking-widest text-gray-600">${escapeHtml(item.category)}</td><td class="px-4 py-4 text-sm font-bold text-dark">${formatRupiah(item.price)}${Number(item.comparePrice)>Number(item.price)?`<div class="text-[10px] text-gray-400 line-through">${formatRupiah(item.comparePrice)}</div>`:''}</td><td class="px-4 py-4"><span class="${String(item.available)!=='false'&&item.available!==false?'bg-green-100 text-green-800 border-green-200':'bg-red-100 text-red-800 border-red-200'} border px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider">${String(item.available)!=='false'&&item.available!==false?'Ready':'Nonaktif'}</span><div class="text-[9px] text-gray-400 mt-1">${escapeHtml(item.condition||'-')}</div></td><td class="px-4 py-4"><div class="flex flex-col gap-2 w-max"><button onclick="openEditItemModal('${item.id}')" class="bg-dark text-gold px-3 py-1 text-[10px] uppercase font-bold hover:bg-black transition">Edit Data</button><button onclick="deleteItem('${item.id}')" class="bg-transparent border border-primary text-primary px-3 py-1 text-[10px] uppercase font-bold hover:bg-primary hover:text-white transition">Hapus</button></div></td></tr>`;});
+}
+function resetManageFiles(){[1,2,3].forEach(i=>{document.getElementById(`manage-file-${i}`).value='';document.getElementById(`manage-fileid-${i}`).value='';});document.getElementById('manage-upload-status').innerText='';}
+function openManageItemModal(){
+    document.getElementById('manage-modal-title').innerText='Tambah Item Baju Baru';document.getElementById('manage-mode').value='add';document.getElementById('manage-item-form').reset();document.getElementById('manage-id').value='';document.getElementById('manage-deposit').value=100000;document.getElementById('manage-cleaning').value=0;document.getElementById('manage-late-fee').value=50000;document.getElementById('manage-condition').value='Baik';resetManageFiles();openModal('modal-manage-item');
+}
+function openEditItemModal(id){
+    const item=catalogData.find(i=>i.id===id);if(!item)return;document.getElementById('manage-modal-title').innerText='Edit Data: '+item.name;document.getElementById('manage-mode').value='edit';document.getElementById('manage-id').value=item.id;document.getElementById('manage-name').value=item.name;document.getElementById('manage-inventory-code').value=item.inventoryCode||'';document.getElementById('manage-category').value=item.category;document.getElementById('manage-size').value=item.size||'';document.getElementById('manage-color').value=item.color||'';document.getElementById('manage-location').value=item.location||'';document.getElementById('manage-condition').value=item.condition||'Baik';document.getElementById('manage-late-fee').value=item.lateFeePerDay||0;document.getElementById('manage-price').value=item.price;document.getElementById('manage-compare-price').value=item.comparePrice||'';document.getElementById('manage-deposit').value=item.deposit||0;document.getElementById('manage-cleaning').value=item.cleaningFee||0;document.getElementById('manage-status').value=String(item.available);document.getElementById('manage-description').value=item.description||'';document.getElementById('manage-img-1').value=item.images?.[0]||'';document.getElementById('manage-img-2').value=item.images?.[1]||'';document.getElementById('manage-img-3').value=item.images?.[2]||'';[1,2,3].forEach((n,idx)=>{document.getElementById(`manage-file-${n}`).value='';document.getElementById(`manage-fileid-${n}`).value=item.imageFileIds?.[idx]||'';});document.getElementById('manage-upload-status').innerText='';openModal('modal-manage-item');
+}
+async function submitManageItem(e){
+    e.preventDefault();const mode=document.getElementById('manage-mode').value,status=document.getElementById('manage-upload-status'),btn=document.getElementById('manage-submit-btn');btn.disabled=true;btn.classList.add('opacity-50');
+    try{
+        const images=[document.getElementById('manage-img-1').value.trim(),document.getElementById('manage-img-2').value.trim(),document.getElementById('manage-img-3').value.trim()];
+        const fileIds=[document.getElementById('manage-fileid-1').value,document.getElementById('manage-fileid-2').value,document.getElementById('manage-fileid-3').value];
+        for(let i=0;i<3;i++){
+            const file=document.getElementById(`manage-file-${i+1}`).files[0];
+            if(file){status.innerText=`Mengunggah foto ${i+1} ke Google Drive...`;const up=await uploadAdminFile(file,'product',`${document.getElementById('manage-inventory-code').value||'Baju'}-${i+1}`);images[i]=up.url;fileIds[i]=up.fileId;}
         }
-        setInterval(updateClock,1000);
+        if(!images[0])throw new Error('Foto utama wajib diisi melalui upload atau URL.');
+        const item={id:mode==='edit'?document.getElementById('manage-id').value:'',name:document.getElementById('manage-name').value.trim(),inventoryCode:document.getElementById('manage-inventory-code').value.trim(),category:document.getElementById('manage-category').value,size:document.getElementById('manage-size').value.trim(),color:document.getElementById('manage-color').value.trim(),location:document.getElementById('manage-location').value.trim(),condition:document.getElementById('manage-condition').value,lateFeePerDay:Number(document.getElementById('manage-late-fee').value||0),description:document.getElementById('manage-description').value.trim(),price:Number(document.getElementById('manage-price').value),comparePrice:Number(document.getElementById('manage-compare-price').value||0),deposit:Number(document.getElementById('manage-deposit').value||0),cleaningFee:Number(document.getElementById('manage-cleaning').value||0),available:document.getElementById('manage-status').value==='true',images,imageFileIds:fileIds};
+        status.innerText='Menyimpan data ke Spreadsheet...';const out=await api('upsertProduct',item,true);const saved=out.product;const idx=catalogData.findIndex(x=>x.id===saved.id);if(idx>=0)catalogData[idx]=saved;else catalogData.push(saved);savePublicCache();closeModal('modal-manage-item');renderAdminKatalog();renderCatalog(activeCatalogFilter);showSuccessAlert('Database Diperbarui','Data baju tersimpan ke Google Sheet dan foto upload tersimpan di Google Drive.',`<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3 uppercase font-bold text-xs">Tutup</button>`);
+    }catch(err){alert('Gagal menyimpan: '+err.message);}finally{btn.disabled=false;btn.classList.remove('opacity-50');status.innerText='';}
+}
+async function deleteItem(id){if(!confirm('PERINGATAN: Hapus item ini dari katalog?'))return;try{await api('deleteProduct',{id},true);catalogData=catalogData.filter(i=>i.id!==id);savePublicCache();renderAdminKatalog();renderCatalog(activeCatalogFilter);}catch(err){alert('Gagal menghapus: '+err.message);}}
+async function syncSheetNow(){const btn=document.getElementById('sync-sheet-btn');if(btn)btn.disabled=true;try{await refreshAdminData();showSuccessAlert('Sinkronisasi Selesai','Data terbaru dari Google Sheet sudah dimuat ke dashboard dan frontend.',`<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3 uppercase font-bold text-xs">Tutup</button>`);}finally{if(btn)btn.disabled=false;}}
 
-        function formatRupiah(angka) { return 'Rp ' + Number(angka || 0).toLocaleString('id-ID'); }
-        function escapeHtml(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-        function normalizeWA(v='') { let x=String(v).replace(/\D/g,''); if(x.startsWith('0')) x='62'+x.slice(1); if(!x.startsWith('62')) x='62'+x; return x; }
-        function dateID(s) { if(!s) return '-'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}); }
-        function nowISODate(){ return new Date().toISOString().slice(0,10); }
-        function makeLocalId(prefix){ const d=new Date(); return `${prefix}-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(Date.now()).slice(-6)}`; }
-        function getToken(){ return sessionStorage.getItem(TOKEN_KEY)||''; }
-        function saveCache(){ localStorage.setItem(LS_KEY, JSON.stringify({products:catalogData,orders:orderData,bespoke:customOrderData,promos:promoData})); }
-        function loadCache(){ try { return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); } catch(e){ return {}; } }
+// ---------- FILE PREPARATION / UPLOAD ----------
+function readFileAsDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(r.error);r.readAsDataURL(file);});}
+async function compressImageFile(file,maxDim=1600,quality=.82){
+    const data=await readFileAsDataURL(file),img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=data;});let w=img.width,h=img.height,scale=Math.min(1,maxDim/Math.max(w,h));w=Math.round(w*scale);h=Math.round(h*scale);const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);return {base64:canvas.toDataURL('image/jpeg',quality).split(',')[1],mimeType:'image/jpeg',fileName:String(file.name).replace(/\.[^.]+$/, '')+'.jpg'};
+}
+async function prepareUpload(file){
+    if(file.type.startsWith('image/'))return compressImageFile(file);
+    const data=await readFileAsDataURL(file);return {base64:data.split(',')[1],mimeType:file.type||'application/octet-stream',fileName:file.name};
+}
+async function uploadAdminFile(file,category,prefix='file'){
+    const prepared=await prepareUpload(file);prepared.fileName=`${prefix}-${Date.now()}-${prepared.fileName}`;prepared.category=category;const out=await api('uploadFile',prepared,true);return out.file;
+}
 
-        async function api(action, data={}, protectedAction=false){
-            if(!API_READY()) throw new Error('API_NOT_CONFIGURED');
-            const payload = {action, data, token: protectedAction ? getToken() : ''};
-            const body = new URLSearchParams({payload:JSON.stringify(payload)});
-            const res = await fetch(API_URL,{method:'POST',body,redirect:'follow'});
-            if(!res.ok) throw new Error('HTTP_'+res.status);
-            const out = await res.json();
-            if(!out.ok) throw new Error(out.error || 'API_ERROR');
-            return out;
-        }
+// ---------- ADMIN PROMO ----------
+function renderAdminPromo(){const tb=document.getElementById('admin-promo-table');if(!tb)return;if(!promoData.length){tb.innerHTML='<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada promo.</td></tr>';return;}tb.innerHTML=[...promoData].reverse().map(p=>`<tr class="border-b hover:bg-gray-50"><td class="p-3"><b class="text-xs">${escapeHtml(p.name)}</b><div class="text-[9px] text-primary">${p.code?escapeHtml(p.code):'PROMO OTOMATIS'}</div></td><td class="p-3 text-xs font-bold">${p.type==='percent'?`${p.value}%`:formatRupiah(p.value)}</td><td class="p-3 text-[10px]">${dateID(p.startDate)}<br>${dateID(p.endDate)}</td><td class="p-3 text-[10px] uppercase">${escapeHtml(p.scope)} ${p.target?'/ '+escapeHtml(p.target):''}</td><td class="p-3"><span class="${String(p.active)!=='false'?'text-green-700':'text-gray-400'} text-[10px] font-bold uppercase">${String(p.active)!=='false'?'Aktif':'Nonaktif'}</span></td><td class="p-3"><div class="flex flex-col gap-1 w-max"><button onclick="openPromoModal('${p.id}')" class="bg-dark text-gold px-2 py-1 text-[9px] uppercase font-bold">Edit</button><button onclick="deletePromo('${p.id}')" class="border border-primary text-primary px-2 py-1 text-[9px] uppercase font-bold">Hapus</button></div></td></tr>`).join('');}
+function openPromoModal(id=''){document.getElementById('promo-form').reset();document.getElementById('promo-mode').value=id?'edit':'add';document.getElementById('promo-id').value=id;document.getElementById('promo-modal-title').innerText=id?'Edit Promo':'Tambah Promo';document.getElementById('promo-start').value=nowISODate();document.getElementById('promo-end').value=nowISODate();document.getElementById('promo-active').value='true';if(id){const p=promoData.find(x=>x.id===id);if(p){document.getElementById('promo-name').value=p.name;document.getElementById('promo-code').value=p.code||'';document.getElementById('promo-type').value=p.type;document.getElementById('promo-value').value=p.value;document.getElementById('promo-min').value=p.minTransaction||0;document.getElementById('promo-start').value=p.startDate;document.getElementById('promo-end').value=p.endDate;document.getElementById('promo-scope').value=p.scope;document.getElementById('promo-target').value=p.target||'';document.getElementById('promo-active').value=String(p.active);}}togglePromoTarget();openModal('modal-promo');}
+function togglePromoTarget(){const s=document.getElementById('promo-scope').value;document.getElementById('promo-target').disabled=s==='all';if(s==='all')document.getElementById('promo-target').value='';}
+async function submitPromo(e){e.preventDefault();const p={id:document.getElementById('promo-id').value,name:document.getElementById('promo-name').value.trim(),code:document.getElementById('promo-code').value.trim().toUpperCase(),type:document.getElementById('promo-type').value,value:Number(document.getElementById('promo-value').value),minTransaction:Number(document.getElementById('promo-min').value||0),startDate:document.getElementById('promo-start').value,endDate:document.getElementById('promo-end').value,scope:document.getElementById('promo-scope').value,target:document.getElementById('promo-target').value.trim(),active:document.getElementById('promo-active').value==='true'};try{const out=await api('upsertPromo',p,true);const saved=out.promo;const idx=promoData.findIndex(x=>x.id===saved.id);if(idx>=0)promoData[idx]=saved;else promoData.push(saved);savePublicCache();closeModal('modal-promo');renderAdminPromo();renderCatalog(activeCatalogFilter);}catch(err){alert('Gagal menyimpan promo: '+err.message);}}
+async function deletePromo(id){if(!confirm('Hapus promo ini?'))return;try{await api('deletePromo',{id},true);promoData=promoData.filter(x=>x.id!==id);savePublicCache();renderAdminPromo();renderCatalog(activeCatalogFilter);}catch(err){alert('Gagal: '+err.message);}}
 
-        async function bootstrap(){
-            const cache = loadCache();
-            catalogData = cache.products?.length ? cache.products : [...DEFAULT_PRODUCTS];
-            orderData = cache.orders || [];
-            customOrderData = cache.bespoke || [];
-            promoData = cache.promos || [];
-            if(API_READY()){
-                try{
-                    const out = await api('bootstrap');
-                    catalogData = out.products || catalogData;
-                    promoData = out.promos || [];
-                    saveCache();
-                }catch(err){ console.warn('Bootstrap API gagal, cache lokal dipakai:',err.message); }
-            }
-            renderCatalog(activeCatalogFilter);
-            updateClock();
-        }
+document.addEventListener('DOMContentLoaded',bootstrap);
+setInterval(()=>{if(getToken()&&!document.getElementById('view-admin-dashboard')?.classList.contains('hide'))refreshAdminData();},60000);
 
-        function closeMobileMenu(){ document.getElementById('mobile-menu')?.classList.add('hide'); }
-        function navigate(viewId){
-            document.querySelectorAll('.view-section').forEach(el=>el.classList.add('hide'));
-            document.getElementById(`view-${viewId}`)?.classList.remove('hide');
-            window.scrollTo({top:0,behavior:'smooth'});
-            if(viewId==='catalog') renderCatalog(activeCatalogFilter);
-        }
-        function openModal(id){ document.getElementById(id)?.classList.remove('hide'); document.body.style.overflow='hidden'; }
-        function closeModal(id){ document.getElementById(id)?.classList.add('hide'); document.body.style.overflow='auto'; }
-        function showSuccessAlert(title,desc,btns){ document.getElementById('success-title').innerText=title; document.getElementById('success-desc').innerHTML=desc; document.getElementById('success-actions').innerHTML=btns; openModal('modal-success'); }
-
-        // ---------- PRICING / PROMO ----------
-        function isPromoActive(p, product, voucher=''){
-            if(!p || String(p.active).toLowerCase()==='false') return false;
-            const today=nowISODate(); if(p.startDate && today<p.startDate) return false; if(p.endDate && today>p.endDate) return false;
-            const code=(p.code||'').trim().toUpperCase();
-            if(code && code !== String(voucher||'').trim().toUpperCase()) return false;
-            if(p.scope==='category' && String(p.target||'').toLowerCase()!==String(product.category||'').toLowerCase()) return false;
-            if(p.scope==='product' && String(p.target||'')!==String(product.id||'')) return false;
-            return true;
-        }
-        function priceQuote(product,voucher=''){
-            const base=Number(product.price||0), cleaning=Number(product.cleaningFee||0), deposit=Number(product.deposit||0);
-            let promo=null, discount=0;
-            const eligible=promoData.filter(p=>isPromoActive(p,product,voucher) && base>=Number(p.minTransaction||0));
-            eligible.forEach(p=>{
-                const d=p.type==='percent' ? Math.round(base*Number(p.value||0)/100) : Number(p.value||0);
-                if(d>discount){discount=Math.min(base,d);promo=p;}
-            });
-            return {base,cleaning,deposit,promo,discount,subtotal:base+cleaning+deposit,total:Math.max(0,base+cleaning+deposit-discount)};
-        }
-        function catalogPriceHtml(item){
-            const q=priceQuote(item,'');
-            const compare=Number(item.comparePrice||0);
-            if(q.promo){ return `${compare>q.base?`<span class="text-gray-400 line-through text-xs mr-2">${formatRupiah(compare)}</span>`:''}<span class="text-primary font-semibold text-sm">${formatRupiah(q.base-q.discount)}</span><div class="text-[9px] uppercase tracking-widest text-gold font-bold mt-1">${escapeHtml(q.promo.name)}</div>`; }
-            if(compare>q.base) return `<span class="text-gray-400 line-through text-xs mr-2">${formatRupiah(compare)}</span><span class="text-primary font-semibold text-sm">${formatRupiah(q.base)}</span>`;
-            return `<span class="text-primary font-semibold text-sm">${formatRupiah(q.base)}</span>`;
-        }
-
-        // ---------- BESPOKE ----------
-        function openCustomDressModal(){ calculateEstimasi(); openModal('modal-custom-dress'); }
-        function togglePayet(jenis){ if(jenis==='ringan'&&document.getElementById('opt-payet-ringan').checked) document.getElementById('opt-payet-full').checked=false; if(jenis==='full'&&document.getElementById('opt-payet-full').checked) document.getElementById('opt-payet-ringan').checked=false; }
-        function calculateEstimasi(){
-            let total=HARGA_BASIC;
-            const k=document.getElementById('opt-kain').checked, r=document.getElementById('opt-payet-ringan').checked, f=document.getElementById('opt-payet-full').checked, i=document.getElementById('opt-furing').checked;
-            if(k)total+=HARGA_KAIN;if(r)total+=HARGA_PAYET_RINGAN;if(f)total+=HARGA_PAYET_FULL;if(i)total+=HARGA_FURING;
-            document.getElementById('calc-kain').classList.toggle('hide',!k);document.getElementById('calc-payet-ringan').classList.toggle('hide',!r);document.getElementById('calc-payet-full').classList.toggle('hide',!f);document.getElementById('calc-furing').classList.toggle('hide',!i);
-            estimasiSaatIni=total; document.getElementById('total-estimasi').innerText=formatRupiah(total);
-        }
-        async function submitCustomOrder(e){
-            e.preventDefault();
-            const obj={
-                id:makeLocalId('BSP'), createdAt:new Date().toISOString(), name:document.getElementById('cd-name').value.trim(), wa:normalizeWA(document.getElementById('cd-wa').value),
-                chest:Number(document.getElementById('cd-dada').value), waist:Number(document.getElementById('cd-pinggang').value), hip:Number(document.getElementById('cd-pinggul').value), shoulder:Number(document.getElementById('cd-bahu').value), length:Number(document.getElementById('cd-panjangbaju').value), notes:document.getElementById('cd-notes').value.trim(),
-                premiumFabric:document.getElementById('opt-kain').checked, lightBeads:document.getElementById('opt-payet-ringan').checked, fullBeads:document.getElementById('opt-payet-full').checked, lining:document.getElementById('opt-furing').checked,
-                estimate:estimasiSaatIni,status:'Lead'
-            };
-            try{ if(API_READY()){ const out=await api('createBespoke',obj); Object.assign(obj,out.bespoke||{}); } else { customOrderData.push(obj); saveCache(); } }
-            catch(err){ showSuccessAlert('Gagal Menyimpan','Koneksi database gagal: '+escapeHtml(err.message),`<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3">Tutup</button>`); return; }
-            closeModal('modal-custom-dress');
-            const msg=buildBespokeWA(obj); showWAPreview(STORE_WA,msg);
-            document.getElementById('custom-dress-form').reset(); calculateEstimasi();
-        }
-        function buildBespokeWA(o){
-            const extras=[o.premiumFabric?'Kain Premium':'',o.lightBeads?'Payet Ringan':'',o.fullBeads?'Full Payet/Bordir':'',o.lining?'Furing Dalam':''].filter(Boolean).join(', ')||'-';
-            return `Halo Tim IndCollection,\n\nSaya telah mengisi formulir *Bespoke / Custom Dress*.\n\nID: *${o.id}*\nNama: ${o.name}\nWhatsApp: +${o.wa}\n\n*Ukuran (cm)*\nLingkar Dada: ${o.chest}\nLingkar Pinggang: ${o.waist}\nLingkar Pinggul: ${o.hip}\nLebar Bahu: ${o.shoulder}\nPanjang Dress: ${o.length}\n\nDetail Tambahan: ${extras}\nCatatan Model: ${o.notes||'-'}\n\n*Estimasi Awal: ${formatRupiah(o.estimate)}*\n\nMohon panduannya untuk konsultasi dan penawaran harga final. Terima kasih.`;
-        }
-
-        // ---------- CATALOG ----------
-        function filterCatalog(category,ev){ activeCatalogFilter=category; document.querySelectorAll('.filter-btn').forEach(btn=>{btn.classList.remove('bg-dark','text-gold','active');btn.classList.add('bg-transparent','text-dark');}); const btn=ev?.currentTarget||window.event?.currentTarget; if(btn){btn.classList.remove('bg-transparent','text-dark');btn.classList.add('bg-dark','text-gold','active');} renderCatalog(category); }
-        function slideImage(itemId,direction,ev){ ev?.stopPropagation(); const item=catalogData.find(i=>i.id===itemId); if(!item||!item.images||item.images.length<=1)return; const max=item.images.length; currentSlideIndex[itemId]=((currentSlideIndex[itemId]||0)+direction+max)%max; document.getElementById(`img-${itemId}`).src=item.images[currentSlideIndex[itemId]]; const dots=document.getElementById(`dots-${itemId}`); if(dots)Array.from(dots.children).forEach((dot,idx)=>dot.className=idx===currentSlideIndex[itemId]?'w-2 h-2 rounded-full bg-gold':'w-2 h-2 rounded-full bg-white/50'); }
-        function renderCatalog(category='semua'){
-            const grid=document.getElementById('catalog-grid'); if(!grid)return; grid.innerHTML=''; const filtered=category==='semua'?catalogData:catalogData.filter(i=>i.category===category);
-            if(!filtered.length){ grid.innerHTML='<div class="col-span-full text-center py-12 text-gray-400">Koleksi belum tersedia.</div>'; return; }
-            filtered.forEach(item=>{
-                item.images=Array.isArray(item.images)?item.images.filter(Boolean):[]; if(!item.images.length)item.images=['https://placehold.co/600x800?text=IndCollection']; currentSlideIndex[item.id]=0; const isAvail=String(item.available)!=='false'&&item.available!==false; const multi=item.images.length>1;
-                const controls=multi?`<button onclick="slideImage('${item.id}',-1,event);event.stopPropagation();" class="absolute left-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10094;</button><button onclick="slideImage('${item.id}',1,event);event.stopPropagation();" class="absolute right-2 top-1/2 -translate-y-1/2 slider-btn w-8 h-8 flex items-center justify-center rounded-full z-10">&#10095;</button>`:'';
-                const dots=multi?`<div id="dots-${item.id}" class="absolute bottom-3 left-0 w-full flex justify-center gap-1 z-10">${item.images.map((_,idx)=>`<div class="w-2 h-2 rounded-full ${idx===0?'bg-gold':'bg-white/50'}"></div>`).join('')}</div>`:'';
-                grid.innerHTML+=`<div class="group cursor-pointer" onclick="${isAvail?`openBookingModal('${item.id}')`:''}"><div class="relative overflow-hidden bg-gray-100 aspect-[3/4] mb-4"><span class="${isAvail?'bg-dark/80 text-gold':'bg-primary/90 text-white'} text-[10px] uppercase tracking-widest px-3 py-1 absolute top-4 right-4 border border-gold/30 z-20">${isAvail?'Tersedia':'Tidak Aktif'}</span><div class="w-full h-full relative"><img id="img-${item.id}" src="${escapeHtml(item.images[0])}" class="w-full h-full object-cover transition duration-700 ${!isAvail?'grayscale opacity-70':'group-hover:scale-105'}">${controls}${dots}</div></div><div class="text-center px-2"><h3 class="font-serif font-bold text-lg text-dark mb-1 truncate" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</h3><div>${catalogPriceHtml(item)}</div>${isAvail?'<span class="mt-3 inline-block text-xs uppercase tracking-widest font-bold border-b border-dark pb-1 group-hover:text-gold group-hover:border-gold transition">Pesan Sekarang</span>':'<span class="mt-3 block text-xs text-gray-400">Tidak Tersedia</span>'}</div></div>`;
-            });
-        }
-
-        // ---------- BOOKING ----------
-        function openBookingModal(itemId){
-            const item=catalogData.find(i=>i.id===itemId); if(!item)return;
-            document.getElementById('form-item-id').value=itemId; document.getElementById('form-voucher').value=''; document.getElementById('booking-error').classList.add('hide');
-            document.getElementById('booking-item-details').innerHTML=`<div class="flex items-center gap-4 border border-gray-100 p-2 bg-gray-50"><img src="${escapeHtml(item.images[0])}" class="w-16 h-16 object-cover rounded-sm"><div><h4 class="font-bold text-sm text-dark">${escapeHtml(item.name)}</h4><div>${catalogPriceHtml(item)}</div></div></div>`;
-            updateBookingQuote(); openModal('modal-booking');
-        }
-        function updateBookingQuote(){
-            const item=catalogData.find(i=>i.id===document.getElementById('form-item-id').value); if(!item)return; const q=priceQuote(item,document.getElementById('form-voucher')?.value||'');
-            document.getElementById('booking-price-summary').innerHTML=`<div class="flex justify-between"><span>Harga Sewa</span><b>${formatRupiah(q.base)}</b></div>${q.cleaning?`<div class="flex justify-between"><span>Cleaning Fee</span><b>${formatRupiah(q.cleaning)}</b></div>`:''}${q.deposit?`<div class="flex justify-between"><span>Deposit</span><b>${formatRupiah(q.deposit)}</b></div>`:''}${q.discount?`<div class="flex justify-between text-primary"><span>${escapeHtml(q.promo?.name||'Promo')}</span><b>- ${formatRupiah(q.discount)}</b></div>`:''}<div class="flex justify-between border-t mt-2 pt-2 text-dark"><span class="font-bold">Total</span><b class="text-primary">${formatRupiah(q.total)}</b></div>`;
-        }
-        async function submitBooking(e){
-            e.preventDefault(); const btn=document.getElementById('booking-submit-btn'); const errEl=document.getElementById('booking-error'); errEl.classList.add('hide');
-            const item=catalogData.find(i=>i.id===document.getElementById('form-item-id').value); const start=document.getElementById('form-date-start').value,end=document.getElementById('form-date-end').value;
-            if(!start||!end||end<start){errEl.innerText='Tanggal sewa/pengembalian tidak valid.';errEl.classList.remove('hide');return;}
-            const q=priceQuote(item,document.getElementById('form-voucher').value);
-            let order={id:makeLocalId('INV'),createdAt:new Date().toISOString(),productId:item.id,itemName:item.name,name:document.getElementById('form-name').value.trim(),wa:normalizeWA(document.getElementById('form-wa').value),startDate:start,endDate:end,voucher:document.getElementById('form-voucher').value.trim().toUpperCase(),basePrice:q.base,cleaningFee:q.cleaning,deposit:q.deposit,promoId:q.promo?.id||'',promoName:q.promo?.name||'',promoDiscount:q.discount,manualDiscount:0,manualDiscountReason:'',finalTotal:q.total,paid:0,balance:q.total,paymentStatus:'UNPAID',status:'Pending'};
-            btn.disabled=true; btn.innerText='Menyimpan...';
-            try{
-                if(API_READY()){ const out=await api('createOrder',order); order=out.order; if(!orderData.some(o=>o.id===order.id)) orderData.push(order); saveCache(); }
-                else { const conflict=orderData.some(o=>o.productId===order.productId&&o.status!=='Cancelled'&&start<=o.endDate&&end>=o.startDate); if(conflict)throw new Error('Tanggal bentrok dengan booking lain.'); orderData.push(order); saveCache(); }
-                closeModal('modal-booking'); document.querySelector('#modal-booking form')?.reset();
-                showWAPreview(STORE_WA,buildBookingWA(order));
-            }catch(err){ errEl.innerText=String(err.message).includes('BOOKING_CONFLICT')?'Tanggal tersebut sudah dibooking. Silakan pilih tanggal lain.':err.message; errEl.classList.remove('hide'); }
-            finally{btn.disabled=false;btn.innerText='Sewa';}
-        }
-        function buildBookingWA(o){ return `Halo Tim IndCollection,\n\nSaya ingin mengonfirmasi booking berikut:\n\n*INDCOLLECTION - BOOKING SEWA*\nNo. Booking: *${o.id}*\nNama: ${o.name}\nProduk: ${o.itemName} (${o.productId})\nTanggal Sewa: ${dateID(o.startDate)}\nTanggal Kembali: ${dateID(o.endDate)}\n\nHarga Sewa: ${formatRupiah(o.basePrice)}\n${o.cleaningFee?`Cleaning Fee: ${formatRupiah(o.cleaningFee)}\n`:''}${o.deposit?`Deposit: ${formatRupiah(o.deposit)}\n`:''}${o.promoDiscount?`${o.promoName||'Promo'}: -${formatRupiah(o.promoDiscount)}\n`:''}*Total: ${formatRupiah(o.finalTotal)}*\nStatus Pembayaran: ${o.paymentStatus}\n\nMohon konfirmasi booking dan informasi pembayaran/DP. Terima kasih.`; }
-
-        // ---------- WHATSAPP ----------
-        function showWAPreview(phone,text){ waPreviewPhone=normalizeWA(phone||STORE_WA); document.getElementById('wa-preview-text').value=text; openModal('modal-wa-preview'); }
-        function copyWAText(){ const el=document.getElementById('wa-preview-text'); navigator.clipboard?.writeText(el.value).then(()=>{const old=document.getElementById('success-title');}).catch(()=>{el.select();document.execCommand('copy');}); }
-        function openWAFromPreview(){ const text=document.getElementById('wa-preview-text').value; window.open(`https://wa.me/${waPreviewPhone}?text=${encodeURIComponent(text)}`,'_blank'); }
-
-        // ---------- ADMIN AUTH ----------
-        function openAdminLoginModal(){ document.getElementById('login-error').classList.add('hide'); document.getElementById('admin-password').value=''; openModal('modal-admin-login'); }
-        async function handleLogin(e){
-            e.preventDefault(); const pass=document.getElementById('admin-password').value; const error=document.getElementById('login-error');
-            if(!API_READY()){ error.innerText='Hubungkan API_URL Apps Script terlebih dahulu untuk login admin.'; error.classList.remove('hide'); return; }
-            try{ const out=await api('login',{password:pass}); sessionStorage.setItem(TOKEN_KEY,out.token); closeModal('modal-admin-login'); navigate('admin-dashboard'); await refreshAdminData(); switchAdminTab('sewa'); }
-            catch(err){ error.innerText=err.message==='ADMIN_NOT_CONFIGURED'?'Password admin belum diset di Code.gs. Jalankan setAdminPassword().':'Password salah / koneksi gagal.'; error.classList.remove('hide'); }
-        }
-        function logoutAdmin(){ sessionStorage.removeItem(TOKEN_KEY); navigate('home'); }
-        async function refreshAdminData(){
-            try{ const out=await api('adminData',{},true); catalogData=out.products||[]; orderData=out.orders||[]; customOrderData=out.bespoke||[]; promoData=out.promos||[]; saveCache(); renderAdminOrders();renderAdminCustom();renderAdminKatalog();renderAdminPromo();renderCatalog(activeCatalogFilter); }
-            catch(err){ if(String(err.message).includes('AUTH')){logoutAdmin();showSuccessAlert('Sesi Berakhir','Silakan login kembali.',`<button onclick="closeModal('modal-success');openAdminLoginModal()" class="w-full bg-dark text-gold p-3">Login</button>`);} else console.error(err); }
-        }
-        function switchAdminTab(tab){ ['sewa','custom','katalog','promo'].forEach(t=>{ const btn=document.getElementById(`tab-${t}`),cont=document.getElementById(`admin-${t}-container`); if(!btn||!cont)return; if(t===tab){btn.className='px-6 py-3 bg-primary text-white font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md whitespace-nowrap';cont.classList.remove('hide');}else{btn.className='px-6 py-3 bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold uppercase tracking-wide text-xs md:text-sm rounded-t-md transition-colors whitespace-nowrap';cont.classList.add('hide');}}); if(tab==='sewa')renderAdminOrders();if(tab==='custom')renderAdminCustom();if(tab==='katalog')renderAdminKatalog();if(tab==='promo')renderAdminPromo(); }
-
-        // ---------- ADMIN ORDERS ----------
-        function renderAdminOrders(){ const tb=document.getElementById('admin-orders-table'); if(!tb)return; if(!orderData.length){tb.innerHTML='<tr><td class="p-8 text-center text-gray-400">Belum ada penyewaan.</td></tr>';return;} tb.innerHTML='<tr class="bg-gray-50 text-[10px] uppercase tracking-wider text-gray-500"><th class="p-3 text-left">Invoice</th><th class="p-3 text-left">Pelanggan</th><th class="p-3 text-left">Produk / Tanggal</th><th class="p-3 text-left">Total</th><th class="p-3 text-left">Pembayaran</th><th class="p-3 text-left">Status</th><th class="p-3 text-left">Aksi</th></tr>'+[...orderData].reverse().map(o=>`<tr class="border-b hover:bg-gray-50"><td class="p-3"><b class="text-xs">${escapeHtml(o.id)}</b><div class="text-[9px] text-gray-400">${(o.createdAt||'').slice(0,10)}</div></td><td class="p-3"><div class="text-xs font-bold">${escapeHtml(o.name)}</div><div class="text-[10px] text-gray-500">+${escapeHtml(o.wa)}</div></td><td class="p-3"><div class="text-xs">${escapeHtml(o.itemName)}</div><div class="text-[10px] text-gray-500">${dateID(o.startDate)} – ${dateID(o.endDate)}</div></td><td class="p-3 text-xs font-bold">${formatRupiah(o.finalTotal)}</td><td class="p-3"><div class="text-[10px] font-bold ${o.paymentStatus==='PAID'?'text-green-700':'text-primary'}">${escapeHtml(o.paymentStatus)}</div><div class="text-[10px]">Bayar ${formatRupiah(o.paid)}<br>Sisa ${formatRupiah(o.balance)}</div></td><td class="p-3"><select onchange="updateOrderStatus('${o.id}',this.value)" class="border text-[10px] p-1"><option ${o.status==='Pending'?'selected':''}>Pending</option><option ${o.status==='Confirmed'?'selected':''}>Confirmed</option><option ${o.status==='In Use'?'selected':''}>In Use</option><option ${o.status==='Returned'?'selected':''}>Returned</option><option ${o.status==='Cancelled'?'selected':''}>Cancelled</option></select></td><td class="p-3"><div class="flex flex-col gap-1 w-max"><button onclick="openPaymentModal('${o.id}')" class="bg-primary text-white px-2 py-1 text-[9px] uppercase font-bold">Bayar / Diskon</button><button onclick="generateInvoice('${o.id}')" class="bg-dark text-gold px-2 py-1 text-[9px] uppercase font-bold">Nota PDF</button><button onclick="adminOrderWA('${o.id}')" class="border border-green-600 text-green-700 px-2 py-1 text-[9px] uppercase font-bold">WhatsApp</button></div></td></tr>`).join(''); }
-        async function updateOrderStatus(id,status){ try{ await api('updateOrder',{id,status},true); const o=orderData.find(x=>x.id===id); if(o)o.status=status; saveCache(); }catch(err){alert('Gagal: '+err.message);await refreshAdminData();} }
-        function openPaymentModal(id){ const o=orderData.find(x=>x.id===id); if(!o)return; document.getElementById('payment-order-id').value=id; document.getElementById('payment-discount-type').value='none';document.getElementById('payment-discount-value').value=0;document.getElementById('payment-discount-reason').value='';document.getElementById('payment-amount').value='';document.getElementById('payment-notes').value=''; document.getElementById('payment-order-summary').innerHTML=`<b>${escapeHtml(o.id)} — ${escapeHtml(o.name)}</b><div class="mt-2 flex justify-between"><span>Total saat ini</span><b>${formatRupiah(o.finalTotal)}</b></div><div class="flex justify-between"><span>Sudah dibayar</span><b>${formatRupiah(o.paid)}</b></div><div class="flex justify-between text-primary"><span>Sisa</span><b>${formatRupiah(o.balance)}</b></div>`;openModal('modal-payment'); }
-        async function submitPayment(e){ e.preventDefault(); const id=document.getElementById('payment-order-id').value; const payload={id,discountType:document.getElementById('payment-discount-type').value,discountValue:Number(document.getElementById('payment-discount-value').value||0),discountReason:document.getElementById('payment-discount-reason').value.trim(),amount:Number(document.getElementById('payment-amount').value||0),method:document.getElementById('payment-method').value,notes:document.getElementById('payment-notes').value.trim()}; try{const out=await api('addPayment',payload,true); const idx=orderData.findIndex(x=>x.id===id); if(idx>=0)orderData[idx]=out.order; saveCache();closeModal('modal-payment');renderAdminOrders();showWAPreview(out.order.wa,buildPaymentWA(out.order,out.payment));}catch(err){alert('Gagal menyimpan pembayaran: '+err.message);} }
-        function buildPaymentWA(o,p){return `Halo Kak ${o.name}, terima kasih telah memilih *IndCollection*. 🌷\n\n*PEMBAYARAN INDCOLLECTION*\nNo. Invoice: *${o.id}*\nProduk: ${o.itemName}\nPembayaran: ${formatRupiah(p?.amount||0)} (${p?.method||'-'})\n${o.manualDiscount?`Diskon: -${formatRupiah(o.manualDiscount)}${o.manualDiscountReason?` (${o.manualDiscountReason})`:''}\n`:''}Total Final: *${formatRupiah(o.finalTotal)}*\nSudah Dibayar: ${formatRupiah(o.paid)}\nSisa: *${formatRupiah(o.balance)}*\nStatus: *${o.paymentStatus}*\n\nSimpan pesan/nota ini sebagai bukti transaksi. Terima kasih.`;}
-        function adminOrderWA(id){const o=orderData.find(x=>x.id===id);if(!o)return;showWAPreview(o.wa,`Halo Kak ${o.name}, berikut ringkasan booking IndCollection.\n\nNo. Invoice: *${o.id}*\nProduk: ${o.itemName}\nSewa: ${dateID(o.startDate)} – ${dateID(o.endDate)}\nTotal: *${formatRupiah(o.finalTotal)}*\nSudah Dibayar: ${formatRupiah(o.paid)}\nSisa: ${formatRupiah(o.balance)}\nStatus Booking: ${o.status}\nStatus Pembayaran: ${o.paymentStatus}\n\nTerima kasih.`);}
-
-        // ---------- PDF INVOICE ----------
-        function generateInvoice(id){
-            const o=orderData.find(x=>x.id===id); if(!o)return; if(!window.jspdf?.jsPDF){alert('Library PDF belum termuat.');return;} const {jsPDF}=window.jspdf; const doc=new jsPDF();
-            doc.setFillColor(123,17,19);doc.rect(0,0,210,30,'F');doc.setTextColor(212,175,55);doc.setFont('times','bold');doc.setFontSize(22);doc.text('IndCollection',15,19);doc.setFontSize(9);doc.setTextColor(255,255,255);doc.text('Exclusive Kebaya & Bespoke Dress',15,25);
-            doc.setTextColor(30,30,30);doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('INVOICE / NOTA',195,18,{align:'right'});doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text(o.id,195,24,{align:'right'});
-            let y=43; doc.setFont('helvetica','bold');doc.text('Pelanggan',15,y);doc.setFont('helvetica','normal');doc.text(o.name,15,y+6);doc.text('+'+o.wa,15,y+11);doc.setFont('helvetica','bold');doc.text('Periode Sewa',110,y);doc.setFont('helvetica','normal');doc.text(`${dateID(o.startDate)} - ${dateID(o.endDate)}`,110,y+6);
-            y=68;doc.setDrawColor(220);doc.line(15,y,195,y);y+=10; const row=(label,value,bold=false)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.text(label,18,y);doc.text(value,192,y,{align:'right'});y+=7;};
-            row(o.itemName,formatRupiah(o.basePrice),true); if(o.cleaningFee)row('Cleaning Fee',formatRupiah(o.cleaningFee)); if(o.deposit)row('Deposit',formatRupiah(o.deposit)); if(o.promoDiscount)row(o.promoName||'Promo','- '+formatRupiah(o.promoDiscount)); if(o.manualDiscount)row('Diskon '+(o.manualDiscountReason||''),'- '+formatRupiah(o.manualDiscount)); doc.line(15,y,195,y);y+=8;row('TOTAL',formatRupiah(o.finalTotal),true);row('SUDAH DIBAYAR',formatRupiah(o.paid));row('SISA PEMBAYARAN',formatRupiah(o.balance),true);
-            y+=7;doc.setFillColor(o.paymentStatus==='PAID'?230:250,o.paymentStatus==='PAID'?245:235,o.paymentStatus==='PAID'?230:235);doc.rect(15,y,180,15,'F');doc.setFont('helvetica','bold');doc.text(`STATUS: ${o.paymentStatus}`,20,y+9);y+=28;doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(90);doc.text('Terima kasih telah memilih IndCollection.',15,y);doc.text('Jl. Ridwan Rais Gg. Ainan No.9, Bandar Lampung | WA +62 812-2000-7780',15,y+6);
-            doc.save(`IndCollection_${o.id}_${o.name.replace(/[^a-z0-9]+/gi,'-')}.pdf`);
-        }
-
-        // ---------- ADMIN BESPOKE ----------
-        function renderAdminCustom(){const tb=document.getElementById('admin-custom-table');if(!tb)return;if(!customOrderData.length){tb.innerHTML='<tr><td class="p-8 text-center text-gray-400">Belum ada pesanan Bespoke.</td></tr>';return;}tb.innerHTML='<tr class="bg-gray-50 text-[10px] uppercase tracking-wider text-gray-500"><th class="p-3 text-left">ID</th><th class="p-3 text-left">Pelanggan</th><th class="p-3 text-left">Ukuran / Detail</th><th class="p-3 text-left">Estimasi</th><th class="p-3 text-left">Status</th><th class="p-3 text-left">WA</th></tr>'+[...customOrderData].reverse().map(o=>`<tr class="border-b"><td class="p-3 text-xs font-bold">${escapeHtml(o.id)}</td><td class="p-3"><b class="text-xs">${escapeHtml(o.name)}</b><div class="text-[10px]">+${escapeHtml(o.wa)}</div></td><td class="p-3 text-[10px]">Dada ${o.chest} | Pinggang ${o.waist} | Pinggul ${o.hip}<br>${escapeHtml(o.notes||'-')}</td><td class="p-3 text-xs font-bold">${formatRupiah(o.estimate)}</td><td class="p-3"><select onchange="updateBespokeStatus('${o.id}',this.value)" class="border text-[10px] p-1">${['Lead','Quotation','DP','Production','Fitting','Done'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="p-3"><button onclick="adminBespokeWA('${o.id}')" class="border border-green-600 text-green-700 px-2 py-1 text-[9px] uppercase font-bold">WhatsApp</button></td></tr>`).join('');}
-        async function updateBespokeStatus(id,status){try{await api('updateBespoke',{id,status},true);const o=customOrderData.find(x=>x.id===id);if(o)o.status=status;saveCache();}catch(err){alert('Gagal: '+err.message);}}
-        function adminBespokeWA(id){const o=customOrderData.find(x=>x.id===id);if(!o)return;showWAPreview(o.wa,buildBespokeWA(o));}
-
-        // ---------- ADMIN CATALOG CRUD ----------
-        function renderAdminKatalog(){const tb=document.getElementById('admin-katalog-table');if(!tb)return;if(!catalogData.length){tb.innerHTML='<tr><td colspan="6" class="p-6 text-center text-gray-400 italic font-serif">Katalog Kosong.</td></tr>';return;}tb.innerHTML='';[...catalogData].reverse().forEach(item=>{tb.innerHTML+=`<tr class="hover:bg-gray-50 transition border-b border-gray-100"><td class="p-4"><div class="w-16 h-20 bg-gray-200 overflow-hidden border border-gray-300"><img src="${escapeHtml(item.images?.[0]||'')}" class="w-full h-full object-cover"></div></td><td class="px-4 py-4"><p class="text-sm font-bold text-dark">${escapeHtml(item.name)}</p><p class="text-[10px] text-gray-400 font-mono mt-1">ID: ${escapeHtml(item.id)}</p><p class="text-[10px] text-primary mt-1">${item.images?.length||0} Foto Tersimpan</p></td><td class="px-4 py-4 text-xs uppercase tracking-widest text-gray-600">${escapeHtml(item.category)}</td><td class="px-4 py-4 text-sm font-bold text-dark">${formatRupiah(item.price)}${Number(item.comparePrice)>Number(item.price)?`<div class="text-[10px] text-gray-400 line-through">${formatRupiah(item.comparePrice)}</div>`:''}</td><td class="px-4 py-4"><span class="${String(item.available)!=='false'&&item.available!==false?'bg-green-100 text-green-800 border-green-200':'bg-red-100 text-red-800 border-red-200'} border px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider">${String(item.available)!=='false'&&item.available!==false?'Ready':'Nonaktif'}</span></td><td class="px-4 py-4"><div class="flex flex-col gap-2 w-max"><button onclick="openEditItemModal('${item.id}')" class="bg-dark text-gold px-3 py-1 text-[10px] uppercase font-bold hover:bg-black transition">Edit Data</button><button onclick="deleteItem('${item.id}')" class="bg-transparent border border-primary text-primary px-3 py-1 text-[10px] uppercase font-bold hover:bg-primary hover:text-white transition">Hapus</button></div></td></tr>`;});}
-        function openManageItemModal(){document.getElementById('manage-modal-title').innerText='Tambah Item Baju Baru';document.getElementById('manage-mode').value='add';document.getElementById('manage-item-form').reset();document.getElementById('manage-deposit').value=100000;document.getElementById('manage-cleaning').value=0;openModal('modal-manage-item');}
-        function openEditItemModal(id){const item=catalogData.find(i=>i.id===id);if(!item)return;document.getElementById('manage-modal-title').innerText='Edit Data: '+item.name;document.getElementById('manage-mode').value='edit';document.getElementById('manage-id').value=item.id;document.getElementById('manage-name').value=item.name;document.getElementById('manage-category').value=item.category;document.getElementById('manage-price').value=item.price;document.getElementById('manage-compare-price').value=item.comparePrice||'';document.getElementById('manage-deposit').value=item.deposit||0;document.getElementById('manage-cleaning').value=item.cleaningFee||0;document.getElementById('manage-status').value=String(item.available);document.getElementById('manage-img-1').value=item.images?.[0]||'';document.getElementById('manage-img-2').value=item.images?.[1]||'';document.getElementById('manage-img-3').value=item.images?.[2]||'';openModal('modal-manage-item');}
-        async function submitManageItem(e){e.preventDefault();const mode=document.getElementById('manage-mode').value;const item={id:mode==='edit'?document.getElementById('manage-id').value:'',name:document.getElementById('manage-name').value.trim(),category:document.getElementById('manage-category').value,price:Number(document.getElementById('manage-price').value),comparePrice:Number(document.getElementById('manage-compare-price').value||0),deposit:Number(document.getElementById('manage-deposit').value||0),cleaningFee:Number(document.getElementById('manage-cleaning').value||0),available:document.getElementById('manage-status').value==='true',images:[document.getElementById('manage-img-1').value,document.getElementById('manage-img-2').value,document.getElementById('manage-img-3').value].filter(v=>v.trim())};try{const out=await api('upsertProduct',item,true);const saved=out.product;const idx=catalogData.findIndex(x=>x.id===saved.id);if(idx>=0)catalogData[idx]=saved;else catalogData.push(saved);saveCache();closeModal('modal-manage-item');renderAdminKatalog();renderCatalog(activeCatalogFilter);showSuccessAlert('Database Diperbarui','Perubahan katalog telah disimpan ke Google Sheet.',`<button onclick="closeModal('modal-success')" class="w-full bg-dark text-gold p-3 uppercase font-bold text-xs">Tutup</button>`);}catch(err){alert('Gagal menyimpan: '+err.message);}}
-        async function deleteItem(id){if(!confirm('PERINGATAN: Hapus item ini dari katalog?'))return;try{await api('deleteProduct',{id},true);catalogData=catalogData.filter(i=>i.id!==id);saveCache();renderAdminKatalog();renderCatalog(activeCatalogFilter);}catch(err){alert('Gagal menghapus: '+err.message);}}
-
-        // ---------- ADMIN PROMO ----------
-        function renderAdminPromo(){const tb=document.getElementById('admin-promo-table');if(!tb)return;if(!promoData.length){tb.innerHTML='<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada promo.</td></tr>';return;}tb.innerHTML=[...promoData].reverse().map(p=>`<tr class="border-b hover:bg-gray-50"><td class="p-3"><b class="text-xs">${escapeHtml(p.name)}</b><div class="text-[9px] text-primary">${p.code?escapeHtml(p.code):'PROMO OTOMATIS'}</div></td><td class="p-3 text-xs font-bold">${p.type==='percent'?`${p.value}%`:formatRupiah(p.value)}</td><td class="p-3 text-[10px]">${dateID(p.startDate)}<br>${dateID(p.endDate)}</td><td class="p-3 text-[10px] uppercase">${escapeHtml(p.scope)} ${p.target?'/ '+escapeHtml(p.target):''}</td><td class="p-3"><span class="${String(p.active)!=='false'?'text-green-700':'text-gray-400'} text-[10px] font-bold uppercase">${String(p.active)!=='false'?'Aktif':'Nonaktif'}</span></td><td class="p-3"><div class="flex flex-col gap-1 w-max"><button onclick="openPromoModal('${p.id}')" class="bg-dark text-gold px-2 py-1 text-[9px] uppercase font-bold">Edit</button><button onclick="deletePromo('${p.id}')" class="border border-primary text-primary px-2 py-1 text-[9px] uppercase font-bold">Hapus</button></div></td></tr>`).join('');}
-        function openPromoModal(id=''){document.getElementById('promo-form').reset();document.getElementById('promo-mode').value=id?'edit':'add';document.getElementById('promo-id').value=id;document.getElementById('promo-modal-title').innerText=id?'Edit Promo':'Tambah Promo';document.getElementById('promo-start').value=nowISODate();document.getElementById('promo-end').value=nowISODate();document.getElementById('promo-active').value='true';if(id){const p=promoData.find(x=>x.id===id);if(p){document.getElementById('promo-name').value=p.name;document.getElementById('promo-code').value=p.code||'';document.getElementById('promo-type').value=p.type;document.getElementById('promo-value').value=p.value;document.getElementById('promo-min').value=p.minTransaction||0;document.getElementById('promo-start').value=p.startDate;document.getElementById('promo-end').value=p.endDate;document.getElementById('promo-scope').value=p.scope;document.getElementById('promo-target').value=p.target||'';document.getElementById('promo-active').value=String(p.active);}}openModal('modal-promo');}
-        function togglePromoTarget(){const s=document.getElementById('promo-scope').value;document.getElementById('promo-target').disabled=s==='all';if(s==='all')document.getElementById('promo-target').value='';}
-        async function submitPromo(e){e.preventDefault();const p={id:document.getElementById('promo-id').value,name:document.getElementById('promo-name').value.trim(),code:document.getElementById('promo-code').value.trim().toUpperCase(),type:document.getElementById('promo-type').value,value:Number(document.getElementById('promo-value').value),minTransaction:Number(document.getElementById('promo-min').value||0),startDate:document.getElementById('promo-start').value,endDate:document.getElementById('promo-end').value,scope:document.getElementById('promo-scope').value,target:document.getElementById('promo-target').value.trim(),active:document.getElementById('promo-active').value==='true'};try{const out=await api('upsertPromo',p,true);const saved=out.promo;const idx=promoData.findIndex(x=>x.id===saved.id);if(idx>=0)promoData[idx]=saved;else promoData.push(saved);saveCache();closeModal('modal-promo');renderAdminPromo();renderCatalog(activeCatalogFilter);}catch(err){alert('Gagal menyimpan promo: '+err.message);}}
-        async function deletePromo(id){if(!confirm('Hapus promo ini?'))return;try{await api('deletePromo',{id},true);promoData=promoData.filter(x=>x.id!==id);saveCache();renderAdminPromo();renderCatalog(activeCatalogFilter);}catch(err){alert('Gagal: '+err.message);}}
-
-        document.addEventListener('DOMContentLoaded',bootstrap);
-        setInterval(()=>{ if(getToken() && !document.getElementById('view-admin-dashboard')?.classList.contains('hide')) refreshAdminData(); }, 60000);
     </script>
 </body>
 </html>
